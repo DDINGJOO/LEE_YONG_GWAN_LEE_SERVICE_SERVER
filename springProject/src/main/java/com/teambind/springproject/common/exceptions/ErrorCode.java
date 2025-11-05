@@ -24,6 +24,8 @@ public enum ErrorCode {
 	EXTERNAL_API_ERROR("SYSTEM_003", "External API error", HttpStatus.BAD_GATEWAY),
 	CACHE_ERROR("SYSTEM_004", "Cache error", HttpStatus.INTERNAL_SERVER_ERROR),
 	EVENT_PUBLISH_FAILED("SYSTEM_005", "Failed to publish event", HttpStatus.INTERNAL_SERVER_ERROR),
+	
+	ROOM_NOT_FOUND("ROOM_001", "Room not found", HttpStatus.NOT_FOUND),
 	;
 	private final String errCode;
 	private final String message;
