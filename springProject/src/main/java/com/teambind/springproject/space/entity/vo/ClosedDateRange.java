@@ -9,13 +9,13 @@ import java.util.Objects;
 /**
  * 휴무일 범위를 나타내는 Value Object.
  *
- * <p>특정 날짜 또는 날짜 범위의 휴무를 표현하며, 선택적으로 시간 범위도 지정할 수 있다.
+ * 특정 날짜 또는 날짜 범위의 휴무를 표현하며, 선택적으로 시간 범위도 지정할 수 있다.
  *
- * <ul>
- *   <li>endDate가 null이면 단일 날짜 휴무
- *   <li>startTime/endTime이 null이면 하루 종일 휴무
- *   <li>startTime/endTime이 있으면 해당 시간 범위만 휴무
- * </ul>
+ *
+ *   endDate가 null이면 단일 날짜 휴무
+ *   startTime/endTime이 null이면 하루 종일 휴무
+ *   startTime/endTime이 있으면 해당 시간 범위만 휴무
+ *
  */
 @Embeddable
 public class ClosedDateRange {
@@ -96,7 +96,7 @@ public class ClosedDateRange {
 	/**
 	 * 주어진 시각이 이 휴무 시간 범위에 포함되는지 확인한다.
 	 *
-	 * <p>startTime/endTime이 null이면 하루 종일 휴무로 간주하여 항상 true를 반환한다.
+	 * startTime/endTime이 null이면 하루 종일 휴무로 간주하여 항상 true를 반환한다.
 	 *
 	 * @param time 확인할 시각
 	 * @return 휴무 시간 범위에 포함되면 true, 아니면 false

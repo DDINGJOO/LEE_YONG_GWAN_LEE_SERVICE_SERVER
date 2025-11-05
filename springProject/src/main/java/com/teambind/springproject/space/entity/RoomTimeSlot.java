@@ -11,16 +11,16 @@ import java.util.Objects;
 /**
  * 룸의 시간 슬롯을 나타내는 Entity.
  *
- * <p>운영 정책에 따라 생성되며, 예약 이벤트에 따라 상태가 변경된다. Rolling Window 방식으로 항상 2달치의 슬롯이
+ * 운영 정책에 따라 생성되며, 예약 이벤트에 따라 상태가 변경된다. Rolling Window 방식으로 항상 2달치의 슬롯이
  * 유지된다.
  *
- * <p>상태 전이:
+ * 상태 전이:
  *
- * <pre>
+ *
  * AVAILABLE → PENDING → RESERVED → CANCELLED
  *           ↓
  *       AVAILABLE (결제 실패 시)
- * </pre>
+ *
  */
 @Entity
 @Table(
