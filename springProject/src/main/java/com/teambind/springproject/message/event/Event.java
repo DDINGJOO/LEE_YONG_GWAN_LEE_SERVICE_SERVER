@@ -15,9 +15,20 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class Event {
-	
+
 	/**
 	 * 이벤트가 발행될 Kafka 토픽
 	 */
 	private String topic;
+	
+	/**
+	 * 이벤트 타입 (역직렬화 시 사용)
+	 */
+	private String eventType;
+	
+	/**
+	 * 이벤트 타입을 반환하는 메서드
+	 * 하위 클래스에서 구현
+	 */
+	public abstract String getEventTypeName();
 }
