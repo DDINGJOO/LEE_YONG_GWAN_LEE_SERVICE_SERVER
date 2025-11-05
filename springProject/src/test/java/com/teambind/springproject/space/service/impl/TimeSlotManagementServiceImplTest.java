@@ -121,10 +121,10 @@ class TimeSlotManagementServiceImplTest {
 		log.info("[Then] - 예상(Expected): event.slotId=null, event.roomId={}, event.reservationId={}",
 				roomId, reservationId);
 		log.info("[Then] - 실제(Actual): event.slotId={}, event.roomId={}, event.reservationId={}",
-				event.slotId(), event.roomId(), event.reservationId());
-		assertThat(event.slotId()).isNull(); // DB 저장 전 ID는 null
-		assertThat(event.roomId()).isEqualTo(roomId);
-		assertThat(event.reservationId()).isEqualTo(reservationId);
+				event.getSlotId(), event.getRoomId(), event.getReservationId());
+		assertThat(event.getSlotId()).isNull(); // DB 저장 전 ID는 null
+		assertThat(event.getRoomId()).isEqualTo(roomId);
+		assertThat(event.getReservationId()).isEqualTo(reservationId);
 		log.info("[Then] - ✓ SlotReservedEvent가 올바르게 발행됨");
 		
 		log.info("=== [슬롯을 PENDING 상태로 표시하고 이벤트를 발행한다] 테스트 성공 ===");
@@ -199,9 +199,9 @@ class TimeSlotManagementServiceImplTest {
 		
 		SlotConfirmedEvent event = confirmedEventCaptor.getValue();
 		log.info("[Then] - 예상(Expected): event.slotId=null, event.reservationId={}", reservationId);
-		log.info("[Then] - 실제(Actual): event.slotId={}, event.reservationId={}", event.slotId(), event.reservationId());
-		assertThat(event.slotId()).isNull();
-		assertThat(event.reservationId()).isEqualTo(reservationId);
+		log.info("[Then] - 실제(Actual): event.slotId={}, event.reservationId={}", event.getSlotId(), event.getReservationId());
+		assertThat(event.getSlotId()).isNull();
+		assertThat(event.getReservationId()).isEqualTo(reservationId);
 		log.info("[Then] - ✓ SlotConfirmedEvent가 올바르게 발행됨");
 		
 		log.info("=== [슬롯을 확정하고 이벤트를 발행한다] 테스트 성공 ===");
@@ -245,9 +245,9 @@ class TimeSlotManagementServiceImplTest {
 		
 		SlotCancelledEvent event = cancelledEventCaptor.getValue();
 		log.info("[Then] - 예상(Expected): event.slotId=null, event.cancelReason='User cancelled'");
-		log.info("[Then] - 실제(Actual): event.slotId={}, event.cancelReason='{}'", event.slotId(), event.cancelReason());
-		assertThat(event.slotId()).isNull();
-		assertThat(event.cancelReason()).isEqualTo("User cancelled");
+		log.info("[Then] - 실제(Actual): event.slotId={}, event.cancelReason='{}'", event.getSlotId(), event.getCancelReason());
+		assertThat(event.getSlotId()).isNull();
+		assertThat(event.getCancelReason()).isEqualTo("User cancelled");
 		log.info("[Then] - ✓ SlotCancelledEvent가 올바르게 발행됨");
 		
 		log.info("=== [슬롯을 취소하고 이벤트를 발행한다] 테스트 성공 ===");

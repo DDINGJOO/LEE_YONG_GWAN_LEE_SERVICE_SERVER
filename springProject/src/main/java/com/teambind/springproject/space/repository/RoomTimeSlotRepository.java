@@ -59,6 +59,14 @@ public interface RoomTimeSlotRepository extends JpaRepository<RoomTimeSlot, Long
 	 */
 	List<RoomTimeSlot> findByRoomIdAndSlotDateAndStatus(
 			Long roomId, LocalDate slotDate, SlotStatus status);
+
+	/**
+	 * Reservation ID로 슬롯 목록을 조회한다.
+	 *
+	 * @param reservationId 예약 ID
+	 * @return 조회된 슬롯 목록
+	 */
+	List<RoomTimeSlot> findByReservationId(Long reservationId);
 	
 	/**
 	 * 특정 날짜의 모든 슬롯을 삭제한다. (Rolling Window 유지용)

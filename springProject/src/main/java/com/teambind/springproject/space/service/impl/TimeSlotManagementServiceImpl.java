@@ -56,10 +56,9 @@ public class TimeSlotManagementServiceImpl implements TimeSlotManagementService 
 		
 		// 이벤트 발행
 		SlotReservedEvent event = SlotReservedEvent.of(
-				slot.getSlotId(),
 				roomId,
 				slotDate,
-				slotTime,
+				List.of(slotTime),
 				reservationId
 		);
 		eventPublisher.publishEvent(event);
@@ -79,13 +78,7 @@ public class TimeSlotManagementServiceImpl implements TimeSlotManagementService 
 		slotRepository.save(slot);
 		
 		// 이벤트 발행
-		SlotConfirmedEvent event = SlotConfirmedEvent.of(
-				slot.getSlotId(),
-				roomId,
-				slotDate,
-				slotTime,
-				reservationId
-		);
+		SlotConfirmedEvent event = SlotConfirmedEvent.of(reservationId);
 		eventPublisher.publishEvent(event);
 		
 		log.info("Slot confirmed: slotId={}, roomId={}, reservationId={}",
@@ -104,10 +97,6 @@ public class TimeSlotManagementServiceImpl implements TimeSlotManagementService 
 		
 		// 이벤트 발행
 		SlotCancelledEvent event = SlotCancelledEvent.of(
-				slot.getSlotId(),
-				roomId,
-				slotDate,
-				slotTime,
 				reservationId,
 				"User cancelled"
 		);
@@ -128,20 +117,16 @@ public class TimeSlotManagementServiceImpl implements TimeSlotManagementService 
 		
 		for (RoomTimeSlot slot : slots) {
 			slot.cancel();
-			
-			// 이벤트 발행
-			SlotCancelledEvent event = SlotCancelledEvent.of(
-					slot.getSlotId(),
-					slot.getRoomId(),
-					slot.getSlotDate(),
-					slot.getSlotTime(),
-					reservationId,
-					"Reservation cancelled"
-			);
-			eventPublisher.publishEvent(event);
 		}
-		
+
 		slotRepository.saveAll(slots);
+
+		// 이벤트 발행 (한 번만)
+		SlotCancelledEvent event = SlotCancelledEvent.of(
+				reservationId,
+				"Reservation cancelled"
+		);
+		eventPublisher.publishEvent(event);
 		
 		log.info("Cancelled {} slots for reservationId={}", slots.size(), reservationId);
 	}
@@ -163,18 +148,15 @@ public class TimeSlotManagementServiceImpl implements TimeSlotManagementService 
 			slot.cancel();
 			// 그 다음 복구
 			slot.restore();
-			
-			// 이벤트 발행
+
+			// 이벤트 발행 (각 슬롯마다 별도의 reservationId가 있을 수 있음)
 			SlotRestoredEvent event = SlotRestoredEvent.of(
-					slot.getSlotId(),
-					slot.getRoomId(),
-					slot.getSlotDate(),
-					slot.getSlotTime(),
+					slot.getReservationId(),
 					"Expired PENDING slot"
 			);
 			eventPublisher.publishEvent(event);
 		}
-		
+
 		slotRepository.saveAll(expiredSlots);
 		
 		if (!expiredSlots.isEmpty()) {

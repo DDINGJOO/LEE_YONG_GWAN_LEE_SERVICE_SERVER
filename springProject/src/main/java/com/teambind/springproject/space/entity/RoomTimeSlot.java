@@ -162,6 +162,38 @@ public class RoomTimeSlot {
 		this.reservationId = null;
 		this.lastUpdated = LocalDateTime.now();
 	}
+
+	/**
+	 * 슬롯을 휴무 상태로 전환한다.
+	 * <p>
+	 * 휴무일 설정 시 호출되며, AVAILABLE 상태의 슬롯만 CLOSED로 변경할 수 있다.
+	 *
+	 * @throws InvalidSlotStateTransitionException 슬롯이 AVAILABLE 상태가 아닌 경우
+	 */
+	public void markAsClosed() {
+		if (status != SlotStatus.AVAILABLE) {
+			throw new InvalidSlotStateTransitionException(
+					status.name(), SlotStatus.CLOSED.name());
+		}
+		this.status = SlotStatus.CLOSED;
+		this.lastUpdated = LocalDateTime.now();
+	}
+
+	/**
+	 * 휴무 슬롯을 예약 가능 상태로 전환한다.
+	 * <p>
+	 * 휴무일 해제 시 호출된다.
+	 *
+	 * @throws InvalidSlotStateTransitionException 슬롯이 CLOSED 상태가 아닌 경우
+	 */
+	public void markAsAvailable() {
+		if (status != SlotStatus.CLOSED) {
+			throw new InvalidSlotStateTransitionException(
+					status.name(), SlotStatus.AVAILABLE.name());
+		}
+		this.status = SlotStatus.AVAILABLE;
+		this.lastUpdated = LocalDateTime.now();
+	}
 	
 	/**
 	 * 슬롯이 예약 가능한지 확인한다.

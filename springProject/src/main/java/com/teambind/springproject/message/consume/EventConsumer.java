@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teambind.springproject.message.event.Event;
 import com.teambind.springproject.message.handler.EventHandler;
+import com.teambind.springproject.space.event.ClosedDateUpdateRequestedEvent;
+import com.teambind.springproject.space.event.SlotGenerationRequestedEvent;
 import com.teambind.springproject.space.event.event.SlotCancelledEvent;
 import com.teambind.springproject.space.event.event.SlotConfirmedEvent;
 import com.teambind.springproject.space.event.event.SlotReservedEvent;
@@ -34,6 +36,8 @@ public class EventConsumer {
 		EVENT_TYPE_MAP.put("SlotConfirmed", SlotConfirmedEvent.class);
 		EVENT_TYPE_MAP.put("SlotCancelled", SlotCancelledEvent.class);
 		EVENT_TYPE_MAP.put("SlotRestored", SlotRestoredEvent.class);
+		EVENT_TYPE_MAP.put("SlotGenerationRequested", SlotGenerationRequestedEvent.class);
+		EVENT_TYPE_MAP.put("ClosedDateUpdateRequested", ClosedDateUpdateRequestedEvent.class);
 	}
 	
 	private final List<EventHandler<? extends Event>> eventHandlers;
@@ -45,7 +49,7 @@ public class EventConsumer {
 	 * @param message JSON 형식의 이벤트 메시지
 	 */
 	@KafkaListener(
-			topics = {"reservation-reserved", "reservation-confirmed", "reservation-cancelled", "reservation-restored"},
+			topics = {"reservation-reserved", "reservation-confirmed", "reservation-cancelled", "reservation-restored", "slot-generation-requested", "closed-date-update-requested"},
 			groupId = "room-operation-consumer-group"
 	)
 	public void consume(String message) {

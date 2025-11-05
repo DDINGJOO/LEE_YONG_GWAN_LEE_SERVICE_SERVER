@@ -21,7 +21,6 @@ import java.util.List;
  * 시간 슬롯 생성 서비스 구현체.
  */
 @Service
-@Transactional
 public class TimeSlotGenerationServiceImpl implements TimeSlotGenerationService {
 	
 	private static final Logger log = LoggerFactory.getLogger(TimeSlotGenerationServiceImpl.class);
@@ -41,27 +40,28 @@ public class TimeSlotGenerationServiceImpl implements TimeSlotGenerationService 
 	}
 	
 	@Override
+	@Transactional
 	public int generateSlotsForDate(Long roomId, LocalDate date) {
 		try {
 			// 1. 운영 정책 조회
 			RoomOperatingPolicy policy = policyRepository
 					.findByRoomId(roomId)
 					.orElseThrow(() -> new PolicyNotFoundException(roomId, true));
-			
+
 			// 2. SlotUnit 조회 (Place Info Service)
 			SlotUnit slotUnit = placeInfoApiClient.getSlotUnit(roomId);
-			
+
 			// 3. 정책 기반 슬롯 생성
 			List<RoomTimeSlot> slots = policy.generateSlotsFor(date, slotUnit);
-			
-			// 4. DB 저장
+
+			// 4. DB 저장 (배치 처리)
 			List<RoomTimeSlot> savedSlots = slotRepository.saveAll(slots);
-			
+
 			log.debug("Generated {} slots for roomId={}, date={}",
 					savedSlots.size(), roomId, date);
-			
+
 			return savedSlots.size();
-			
+
 		} catch (Exception e) {
 			log.error("Failed to generate slots for roomId={}, date={}", roomId, date, e);
 			throw SlotGenerationFailedException.forDate(date.toString(), e);
@@ -71,16 +71,18 @@ public class TimeSlotGenerationServiceImpl implements TimeSlotGenerationService 
 	@Override
 	public int generateSlotsForDateRange(Long roomId, LocalDate startDate, LocalDate endDate) {
 		int totalGenerated = 0;
-		
+
+		// 트랜잭션 분할: 각 날짜마다 별도 트랜잭션으로 처리
+		// 60일치 데이터를 한 트랜잭션에서 처리하면 타임아웃 위험
 		LocalDate currentDate = startDate;
 		while (!currentDate.isAfter(endDate)) {
 			totalGenerated += generateSlotsForDate(roomId, currentDate);
 			currentDate = currentDate.plusDays(1);
 		}
-		
+
 		log.info("Generated {} slots for roomId={}, dateRange=[{} to {}]",
 				totalGenerated, roomId, startDate, endDate);
-		
+
 		return totalGenerated;
 	}
 	
@@ -114,11 +116,12 @@ public class TimeSlotGenerationServiceImpl implements TimeSlotGenerationService 
 	}
 	
 	@Override
+	@Transactional
 	public int deleteSlotsBeforeDate(LocalDate beforeDate) {
 		int deletedCount = slotRepository.deleteBySlotDateBefore(beforeDate);
-		
+
 		log.info("Deleted {} slots before date={}", deletedCount, beforeDate);
-		
+
 		return deletedCount;
 	}
 	
