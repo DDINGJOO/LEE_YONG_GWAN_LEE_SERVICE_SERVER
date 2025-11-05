@@ -1,0 +1,45 @@
+spring:
+  profiles:
+    active: test
+
+  # Kafka, Redis 자동 설정 비활성화
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+  h2:
+    console:
+      enabled: false
+
+  # Redis 설정 (테스트용 비활성화)
+  data:
+    redis:
+      repositories:
+        enabled: false
+
+server:
+  port: 0
+
+external:
+  api:
+    place-info:
+      url: http://localhost:8081
+      connect-timeout: 5000
+      read-timeout: 5000
