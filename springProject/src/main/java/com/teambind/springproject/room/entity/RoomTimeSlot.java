@@ -145,7 +145,7 @@ public class RoomTimeSlot {
 							status.name()));
 		}
 		this.reservationId = null;
-		this.status = SlotStatus.CANCELLED;
+		this.status = SlotStatus.AVAILABLE;
 		this.lastUpdated = LocalDateTime.now();
 	}
 	
