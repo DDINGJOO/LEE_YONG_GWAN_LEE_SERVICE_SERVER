@@ -155,10 +155,6 @@ public class RoomTimeSlot {
 	 * @throws InvalidSlotStateTransitionException 슬롯이 CANCELLED 상태가 아닌 경우
 	 */
 	public void restore() {
-		if (status != SlotStatus.CANCELLED) {
-			throw new InvalidSlotStateTransitionException(
-					status.name(), SlotStatus.AVAILABLE.name());
-		}
 		this.status = SlotStatus.AVAILABLE;
 		this.reservationId = null;
 		this.lastUpdated = LocalDateTime.now();
