@@ -21,14 +21,14 @@ public interface TimeSlotGenerationService {
 	/**
 	 * 특정 룸의 특정 날짜에 대한 슬롯을 생성한다.
 	 *
-	 * <p>처리 플로우:
+	 * 처리 플로우:
 	 *
-	 * <ol>
-	 *   <li>RoomOperatingPolicy 조회
-	 *   <li>Place Info API에서 SlotUnit 조회
-	 *   <li>정책 기반으로 슬롯 생성 (Policy.generateSlotsFor 호출)
-	 *   <li>DB에 배치 저장
-	 * </ol>
+	 *
+	 *   RoomOperatingPolicy 조회
+	 *   Place Info API에서 SlotUnit 조회
+	 *   정책 기반으로 슬롯 생성 (Policy.generateSlotsFor 호출)
+	 *   DB에 배치 저장
+	 *
 	 *
 	 * @param roomId 룸 ID
 	 * @param date   슬롯을 생성할 날짜

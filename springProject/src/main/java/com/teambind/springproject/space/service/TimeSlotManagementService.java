@@ -19,13 +19,13 @@ public interface TimeSlotManagementService {
 	/**
 	 * 슬롯을 예약 대기 상태(PENDING)로 변경한다.
 	 *
-	 * <p>처리 플로우:
+	 * 처리 플로우:
 	 *
-	 * <ol>
-	 *   <li>슬롯 조회 및 가용성 체크
-	 *   <li>AVAILABLE → PENDING 상태 전환
-	 *   <li>Redis 캐시 업데이트
-	 * </ol>
+	 *
+	 *   슬롯 조회 및 가용성 체크
+	 *   AVAILABLE → PENDING 상태 전환
+	 *   Redis 캐시 업데이트
+	 *
 	 *
 	 * @param roomId        룸 ID
 	 * @param slotDate      슬롯 날짜
@@ -50,7 +50,7 @@ public interface TimeSlotManagementService {
 	/**
 	 * 슬롯을 취소하고 다시 예약 가능 상태로 복구한다.
 	 *
-	 * <p>결제 실패 또는 예약 취소 이벤트 처리 시 호출된다.
+	 * 결제 실패 또는 예약 취소 이벤트 처리 시 호출된다.
 	 *
 	 * @param roomId   룸 ID
 	 * @param slotDate 슬롯 날짜
@@ -68,7 +68,7 @@ public interface TimeSlotManagementService {
 	/**
 	 * 만료된 PENDING 슬롯을 다시 AVAILABLE 상태로 복구한다.
 	 *
-	 * <p>스케줄러가 주기적으로 호출한다. (예: 15분 이상 PENDING 상태인 슬롯)
+	 * 스케줄러가 주기적으로 호출한다. (예: 15분 이상 PENDING 상태인 슬롯)
 	 *
 	 * @return 복구된 슬롯 개수
 	 */

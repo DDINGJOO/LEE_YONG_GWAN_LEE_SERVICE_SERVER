@@ -25,13 +25,13 @@ public interface RoomOperatingPolicyService {
 	/**
 	 * 새로운 룸 운영 정책을 등록하고 2달치 슬롯을 생성한다.
 	 *
-	 * <p>처리 플로우:
+	 * 처리 플로우:
 	 *
-	 * <ol>
-	 *   <li>RoomOperatingPolicy 저장
-	 *   <li>Place Info API 호출 → SlotUnit 조회
-	 *   <li>오늘부터 60일치 슬롯 배치 생성
-	 * </ol>
+	 *
+	 *   RoomOperatingPolicy 저장
+	 *   Place Info API 호출 → SlotUnit 조회
+	 *   오늘부터 60일치 슬롯 배치 생성
+	 *
 	 *
 	 * @param roomId         룸 ID
 	 * @param weeklySchedule 주간 운영 시간 스케줄

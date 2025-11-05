@@ -19,7 +19,7 @@ public interface PlaceInfoApiClient {
 	/**
 	 * Room ID로 SlotUnit을 조회한다.
 	 *
-	 * <p>API 호출 실패 시 기본값(HALF_HOUR)을 반환한다.
+	 * API 호출 실패 시 기본값(HALF_HOUR)을 반환한다.
 	 *
 	 * @param roomId 룸 ID
 	 * @return SlotUnit (HOUR 또는 HALF_HOUR)

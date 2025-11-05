@@ -44,20 +44,13 @@ public class TimeSlotScheduler {
 	
 	/**
 	 * 매일 새벽 2시에 Rolling Window를 유지한다.
+	 * 처리 플로우:
+	 *   어제 날짜의 슬롯 삭제
+	 *   60일 후 날짜의 슬롯 생성
+	 * Lock 설정:
+	 *   lockAtMostFor: 5분 (작업이 5분 이상 걸리면 자동 해제)
+	 *  lockAtLeastFor: 1분 (최소 1분 간격 유지)
 	 *
-	 * <p>처리 플로우:
-	 *
-	 * <ol>
-	 *   <li>어제 날짜의 슬롯 삭제
-	 *   <li>60일 후 날짜의 슬롯 생성
-	 * </ol>
-	 *
-	 * <p>Lock 설정:
-	 *
-	 * <ul>
-	 *   <li>lockAtMostFor: 5분 (작업이 5분 이상 걸리면 자동 해제)
-	 *   <li>lockAtLeastFor: 1분 (최소 1분 간격 유지)
-	 * </ul>
 	 */
 	@Scheduled(cron = "0 0 2 * * *") // 매일 새벽 2시
 	@SchedulerLock(
