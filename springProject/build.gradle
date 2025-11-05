@@ -39,10 +39,43 @@ dependencies {
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
+    // Test dependencies
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'com.h2database:h2'
+    testImplementation 'org.projectlombok:lombok:1.18.32'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.32'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+
+    testLogging {
+        // 테스트 이벤트 로깅: passed(성공), failed(실패), skipped(스킵)
+        events "passed", "skipped", "failed"
+
+        // 예외 전체 내용 출력
+        exceptionFormat "full"
+
+        // 각 테스트 메소드 실행 시 표시할 정보
+        showExceptions true
+        showCauses true
+        showStackTraces true
+
+        // 표준 출력/에러 스트림 표시
+        showStandardStreams false
+
+        // 테스트 실행 후 요약 정보
+        afterSuite { desc, result ->
+            if (!desc.parent) {
+                println "\n테스트 결과: ${result.resultType}"
+                println "총 테스트: ${result.testCount}개"
+                println "성공: ${result.successfulTestCount}개"
+                println "실패: ${result.failedTestCount}개"
+                println "스킵: ${result.skippedTestCount}개"
+                println "소요 시간: ${result.endTime - result.startTime}ms"
+            }
+        }
+    }
 }
