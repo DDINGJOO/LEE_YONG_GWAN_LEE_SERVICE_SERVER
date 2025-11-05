@@ -1,7 +1,7 @@
-package com.teambind.springproject.space.handler;
+package com.teambind.springproject.space.event.handler;
 
 import com.teambind.springproject.message.handler.EventHandler;
-import com.teambind.springproject.space.event.SlotConfirmedEvent;
+import com.teambind.springproject.space.event.event.SlotConfirmedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

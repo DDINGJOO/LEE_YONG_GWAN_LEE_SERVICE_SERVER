@@ -4,9 +4,9 @@ import com.teambind.springproject.common.exceptions.domain.SlotNotFoundException
 import com.teambind.springproject.config.TestRedisConfig;
 import com.teambind.springproject.space.entity.RoomTimeSlot;
 import com.teambind.springproject.space.entity.enums.SlotStatus;
-import com.teambind.springproject.space.event.SlotCancelledEvent;
-import com.teambind.springproject.space.event.SlotConfirmedEvent;
-import com.teambind.springproject.space.event.SlotReservedEvent;
+import com.teambind.springproject.space.event.event.SlotCancelledEvent;
+import com.teambind.springproject.space.event.event.SlotConfirmedEvent;
+import com.teambind.springproject.space.event.event.SlotReservedEvent;
 import com.teambind.springproject.space.repository.RoomTimeSlotRepository;
 import com.teambind.springproject.space.service.TimeSlotManagementService;
 import lombok.extern.slf4j.Slf4j;
