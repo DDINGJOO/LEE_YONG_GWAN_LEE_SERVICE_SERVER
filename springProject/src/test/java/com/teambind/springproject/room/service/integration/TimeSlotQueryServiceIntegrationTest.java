@@ -4,7 +4,7 @@ import com.teambind.springproject.config.TestRedisConfig;
 import com.teambind.springproject.room.entity.RoomTimeSlot;
 import com.teambind.springproject.room.entity.enums.SlotStatus;
 import com.teambind.springproject.room.repository.RoomTimeSlotRepository;
-import com.teambind.springproject.room.service.TimeSlotQueryService;
+import com.teambind.springproject.room.query.application.TimeSlotQueryService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

@@ -1,6 +1,8 @@
 package com.teambind.springproject.room.service.integration;
 
 import com.teambind.springproject.config.TestRedisConfig;
+import com.teambind.springproject.room.command.domain.service.PlaceInfoApiClient;
+import com.teambind.springproject.room.command.domain.service.TimeSlotGenerationService;
 import com.teambind.springproject.room.entity.RoomOperatingPolicy;
 import com.teambind.springproject.room.entity.RoomTimeSlot;
 import com.teambind.springproject.room.entity.enums.RecurrencePattern;
@@ -9,8 +11,7 @@ import com.teambind.springproject.room.entity.vo.WeeklySlotSchedule;
 import com.teambind.springproject.room.entity.vo.WeeklySlotTime;
 import com.teambind.springproject.room.repository.RoomOperatingPolicyRepository;
 import com.teambind.springproject.room.repository.RoomTimeSlotRepository;
-import com.teambind.springproject.room.service.PlaceInfoApiClient;
-import com.teambind.springproject.room.service.TimeSlotGenerationService;
+
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -34,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * TimeSlotGenerationService 통합 테스트.
- * 
+ *
  * 실제 H2 데이터베이스와 Repository를 사용하여 슬롯 생성 기능을 검증한다.
  */
 @Slf4j

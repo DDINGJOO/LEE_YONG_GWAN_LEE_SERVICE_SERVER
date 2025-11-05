@@ -1,8 +1,8 @@
 package com.teambind.springproject.room.mapper;
 
-import com.teambind.springproject.room.dto.response.AvailableSlotResponse;
-import com.teambind.springproject.room.dto.response.SlotAvailabilityResponse;
-import com.teambind.springproject.room.dto.response.TimeSlotResponse;
+import com.teambind.springproject.room.query.dto.AvailableSlotResponse;
+import com.teambind.springproject.room.query.dto.SlotAvailabilityResponse;
+import com.teambind.springproject.room.query.dto.TimeSlotResponse;
 import com.teambind.springproject.room.entity.RoomTimeSlot;
 import com.teambind.springproject.room.entity.enums.SlotStatus;
 import lombok.extern.slf4j.Slf4j;

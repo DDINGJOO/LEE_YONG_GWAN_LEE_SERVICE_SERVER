@@ -8,7 +8,7 @@ import com.teambind.springproject.room.event.event.SlotCancelledEvent;
 import com.teambind.springproject.room.event.event.SlotConfirmedEvent;
 import com.teambind.springproject.room.event.event.SlotReservedEvent;
 import com.teambind.springproject.room.repository.RoomTimeSlotRepository;
-import com.teambind.springproject.room.service.TimeSlotManagementService;
+import com.teambind.springproject.room.command.domain.service.TimeSlotManagementService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

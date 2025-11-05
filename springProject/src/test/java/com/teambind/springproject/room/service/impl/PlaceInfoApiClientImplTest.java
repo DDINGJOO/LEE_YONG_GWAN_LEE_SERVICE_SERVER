@@ -1,6 +1,7 @@
 package com.teambind.springproject.room.service.impl;
 
 import com.teambind.springproject.common.config.ExternalApiProperties;
+import com.teambind.springproject.room.command.domain.service.PlaceInfoApiClientImpl;
 import com.teambind.springproject.room.entity.enums.SlotUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
