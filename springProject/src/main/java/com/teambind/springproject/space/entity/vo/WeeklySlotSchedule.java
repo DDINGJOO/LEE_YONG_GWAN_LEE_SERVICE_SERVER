@@ -1,5 +1,6 @@
 package com.teambind.springproject.space.entity.vo;
 
+import com.teambind.springproject.common.exceptions.application.InvalidRequestException;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
@@ -51,10 +52,12 @@ public class WeeklySlotSchedule {
 	 *
 	 * @param dayOfWeek 조회할 요일
 	 * @return 해당 요일의 시작 시각 목록 (정렬됨, 중복 제거됨)
-	 * @throws NullPointerException dayOfWeek가 null인 경우
+	 * @throws InvalidRequestException dayOfWeek가 null인 경우
 	 */
 	public List<LocalTime> getStartTimesFor(DayOfWeek dayOfWeek) {
-		Objects.requireNonNull(dayOfWeek, "dayOfWeek must not be null");
+		if (dayOfWeek == null) {
+			throw InvalidRequestException.requiredFieldMissing("dayOfWeek");
+		}
 		return slotTimes.stream()
 				.filter(slot -> slot.getDayOfWeek() == dayOfWeek)
 				.map(WeeklySlotTime::getStartTime)
