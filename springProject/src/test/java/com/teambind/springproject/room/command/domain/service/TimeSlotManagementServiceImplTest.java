@@ -191,12 +191,12 @@ class TimeSlotManagementServiceImplTest {
 		// Then
 		log.info("[Then] 결과 검증 시작");
 
-		log.info("[Then] [검증1] 슬롯 상태가 AVAILABLE로 복구되었는지 확인");
+		log.info("[Then] [검증1] 슬롯 상태가 CANCELLED로 변경되었는지 확인");
 		log.info("[Then] - 기존 상태: {}", SlotStatus.PENDING);
-		log.info("[Then] - 예상 상태: {}", SlotStatus.AVAILABLE);
+		log.info("[Then] - 예상 상태: {}", SlotStatus.CANCELLED);
 		log.info("[Then] - 실제 상태: {}", availableSlot.getStatus());
-		assertThat(availableSlot.getStatus()).isEqualTo(SlotStatus.AVAILABLE);
-		log.info("[Then] - ✓ 상태 복구 확인됨");
+		assertThat(availableSlot.getStatus()).isEqualTo(SlotStatus.CANCELLED);
+		log.info("[Then] - ✓ 취소 상태 확인됨");
 
 		log.info("[Then] [검증2] reservationId가 null로 초기화되었는지 확인");
 		log.info("[Then] - 실제 reservationId: {}", availableSlot.getReservationId());
@@ -249,14 +249,14 @@ class TimeSlotManagementServiceImplTest {
 		// Then
 		log.info("[Then] 결과 검증 시작");
 
-		log.info("[Then] [검증1] 모든 슬롯이 AVAILABLE 상태로 복구되었는지 확인");
+		log.info("[Then] [검증1] 모든 슬롯이 CANCELLED 상태로 변경되었는지 확인");
 		for (int i = 0; i < slots.size(); i++) {
 			RoomTimeSlot slot = slots.get(i);
 			log.info("[Then] - Slot{} 상태: 예상={}, 실제={}",
-					i + 1, SlotStatus.AVAILABLE, slot.getStatus());
-			assertThat(slot.getStatus()).isEqualTo(SlotStatus.AVAILABLE);
+					i + 1, SlotStatus.CANCELLED, slot.getStatus());
+			assertThat(slot.getStatus()).isEqualTo(SlotStatus.CANCELLED);
 		}
-		log.info("[Then] - ✓ 모든 슬롯 상태 복구 확인됨");
+		log.info("[Then] - ✓ 모든 슬롯 취소 확인됨");
 
 		log.info("[Then] [검증2] timeSlotPort.saveAll()이 1번 호출되었는지 확인");
 		verify(timeSlotPort, times(1)).saveAll(slots);

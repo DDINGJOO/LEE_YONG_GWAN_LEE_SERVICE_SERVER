@@ -86,8 +86,6 @@ class RoomSetupApplicationServiceTest {
 		// Given
 		log.info("[Given] Mock 동작 설정");
 		RoomOperatingPolicy savedPolicy = mock(RoomOperatingPolicy.class);
-		when(savedPolicy.getPolicyId()).thenReturn(1L);
-		when(savedPolicy.getRoomId()).thenReturn(roomId);
 		when(operatingPolicyPort.save(any(RoomOperatingPolicy.class))).thenReturn(savedPolicy);
 		log.info("[Given] - operatingPolicyPort.save() -> 정책 저장 성공");
 
@@ -163,8 +161,6 @@ class RoomSetupApplicationServiceTest {
 		log.info("[Given] - 빈 슬롯 목록으로 요청 생성");
 
 		RoomOperatingPolicy savedPolicy = mock(RoomOperatingPolicy.class);
-		when(savedPolicy.getPolicyId()).thenReturn(1L);
-		when(savedPolicy.getRoomId()).thenReturn(roomId);
 		when(operatingPolicyPort.save(any(RoomOperatingPolicy.class))).thenReturn(savedPolicy);
 
 		SlotGenerationRequest savedRequest = SlotGenerationRequest.create(
@@ -293,8 +289,6 @@ class RoomSetupApplicationServiceTest {
 		log.info("[Given]   - Tuesday: 14:00, 15:00");
 
 		RoomOperatingPolicy savedPolicy = mock(RoomOperatingPolicy.class);
-		when(savedPolicy.getPolicyId()).thenReturn(1L);
-		when(savedPolicy.getRoomId()).thenReturn(roomId);
 		when(operatingPolicyPort.save(any(RoomOperatingPolicy.class))).thenReturn(savedPolicy);
 
 		SlotGenerationRequest savedRequest = SlotGenerationRequest.create(

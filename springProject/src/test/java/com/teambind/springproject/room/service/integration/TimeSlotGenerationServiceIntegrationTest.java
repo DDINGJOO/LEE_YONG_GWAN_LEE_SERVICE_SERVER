@@ -1,5 +1,6 @@
 package com.teambind.springproject.room.service.integration;
 
+import com.teambind.springproject.config.TestKafkaConfig;
 import com.teambind.springproject.config.TestRedisConfig;
 import com.teambind.springproject.room.command.domain.service.PlaceInfoApiClient;
 import com.teambind.springproject.room.command.domain.service.TimeSlotGenerationService;
@@ -41,7 +42,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @Slf4j
 @SpringBootTest
 @ActiveProfiles("test")
-@Import(TestRedisConfig.class)
+@Import({TestRedisConfig.class, TestKafkaConfig.class})
 @Transactional
 @DisplayName("TimeSlotGenerationService 통합 테스트")
 class TimeSlotGenerationServiceIntegrationTest {

@@ -19,10 +19,10 @@ import java.util.List;
  * 시간 슬롯 생성 서비스 구현체.
  *
  * Hexagonal Architecture 적용:
- * 
+ *
  *   Infrastructure 계층(JPA)에 직접 의존하지 않고 Port 인터페이스에 의존
  *   DIP (Dependency Inversion Principle) 준수
- * 
+ *
  */
 @Service
 public class TimeSlotGenerationServiceImpl implements TimeSlotGenerationService {
@@ -46,12 +46,12 @@ public class TimeSlotGenerationServiceImpl implements TimeSlotGenerationService 
 	@Override
 	@Transactional
 	public int generateSlotsForDate(Long roomId, LocalDate date) {
+		
 		try {
 			// 1. 운영 정책 조회 (Port 사용)
 			RoomOperatingPolicy policy = operatingPolicyPort
 					.findByRoomId(roomId)
-					.orElseThrow(() -> new PolicyNotFoundException(roomId, true));
-
+					.orElseThrow(() ->  new PolicyNotFoundException(roomId, true));
 			// 2. SlotUnit 조회 (Place Info Service)
 			SlotUnit slotUnit = placeInfoApiClient.getSlotUnit(roomId);
 

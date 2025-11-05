@@ -144,6 +144,7 @@ public class RoomTimeSlot {
 					String.format("슬롯을 취소할 수 없습니다. 현재 상태: %s (PENDING 또는 RESERVED 상태여야 함)",
 							status.name()));
 		}
+		this.reservationId = null;
 		this.status = SlotStatus.CANCELLED;
 		this.lastUpdated = LocalDateTime.now();
 	}
@@ -165,7 +166,7 @@ public class RoomTimeSlot {
 
 	/**
 	 * 슬롯을 휴무 상태로 전환한다.
-	 * 
+	 *
 	 * 휴무일 설정 시 호출되며, AVAILABLE 상태의 슬롯만 CLOSED로 변경할 수 있다.
 	 *
 	 * @throws InvalidSlotStateTransitionException 슬롯이 AVAILABLE 상태가 아닌 경우
@@ -181,7 +182,7 @@ public class RoomTimeSlot {
 
 	/**
 	 * 휴무 슬롯을 예약 가능 상태로 전환한다.
-	 * 
+	 *
 	 * 휴무일 해제 시 호출된다.
 	 *
 	 * @throws InvalidSlotStateTransitionException 슬롯이 CLOSED 상태가 아닌 경우

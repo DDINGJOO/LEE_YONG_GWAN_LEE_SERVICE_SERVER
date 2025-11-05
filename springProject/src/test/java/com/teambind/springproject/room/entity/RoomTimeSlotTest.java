@@ -15,10 +15,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * RoomTimeSlot 엔티티 단위 테스트.
- * 
+ *
  * 테스트 범위:
- * 
- * 
+ *
+ *
  * Factory 메서드를 통한 슬롯 생성
  * 상태 전이 (AVAILABLE → PENDING → RESERVED)
  * 예약 취소 및 복구
@@ -246,7 +246,7 @@ class RoomTimeSlotTest {
 			
 			// Then
 			assertThat(slot.getStatus()).isEqualTo(SlotStatus.CANCELLED);
-			assertThat(slot.getReservationId()).isEqualTo(1001L); // 예약 ID는 유지
+			assertThat(slot.getReservationId()).isEqualTo(null); // 예약 ID는 유지 X
 		}
 		
 		@Test

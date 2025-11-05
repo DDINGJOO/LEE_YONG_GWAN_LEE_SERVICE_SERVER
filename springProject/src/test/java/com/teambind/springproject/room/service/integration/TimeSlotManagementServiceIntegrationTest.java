@@ -1,6 +1,7 @@
 package com.teambind.springproject.room.service.integration;
 
 import com.teambind.springproject.common.exceptions.domain.SlotNotFoundException;
+import com.teambind.springproject.config.TestKafkaConfig;
 import com.teambind.springproject.config.TestRedisConfig;
 import com.teambind.springproject.room.entity.RoomTimeSlot;
 import com.teambind.springproject.room.entity.enums.SlotStatus;
@@ -39,7 +40,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @Slf4j
 @SpringBootTest
 @ActiveProfiles("test")
-@Import(TestRedisConfig.class)
+@Import({TestRedisConfig.class, TestKafkaConfig.class})
 @Transactional
 @DisplayName("TimeSlotManagementService 통합 테스트")
 class TimeSlotManagementServiceIntegrationTest {
@@ -329,12 +330,12 @@ class TimeSlotManagementServiceIntegrationTest {
 		log.info("[Then] - ✓ 다른 예약의 슬롯은 영향받지 않음");
 		
 		log.info("[Then] [검증4] SlotCancelledEvent 발행 개수 확인");
-		// 이벤트 검증: 3개의 취소 이벤트
+		// 이벤트 검증: 예약 단위로 1개의 취소 이벤트 발행
 		List<SlotCancelledEvent> events = eventCollector.getEventsOfType(SlotCancelledEvent.class);
-		log.info("[Then] - 예상(Expected): 3개의 취소 이벤트 (9시, 10시, 11시)");
+		log.info("[Then] - 예상(Expected): 1개의 취소 이벤트 (예약 단위)");
 		log.info("[Then] - 실제(Actual): {}개의 취소 이벤트", events.size());
-		assertThat(events).hasSize(3);
-		log.info("[Then] - ✓ 취소 이벤트가 슬롯 개수만큼 발행됨");
+		assertThat(events).hasSize(1);
+		log.info("[Then] - ✓ 예약 취소 이벤트가 발행됨");
 		
 		log.info("=== [예약 ID로 모든 슬롯을 취소한다] 테스트 성공 ===");
 	}

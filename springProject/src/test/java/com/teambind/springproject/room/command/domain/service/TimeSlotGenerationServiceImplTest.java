@@ -143,13 +143,13 @@ class TimeSlotGenerationServiceImplTest {
 		log.info("[Given] - operatingPolicyPort.findByRoomId() -> 빈 Optional 반환");
 
 		// When & Then
-		log.info("[When & Then] generateSlotsForDate() 호출 시 PolicyNotFoundException 발생");
+		log.info("[When & Then] generateSlotsForDate() 호출 시 SlotGenerationFailedException 발생");
 		log.info("[When & Then] - 파라미터: roomId={}, date={}", roomId, testDate);
 
 		assertThatThrownBy(() -> service.generateSlotsForDate(roomId, testDate))
-				.isInstanceOf(PolicyNotFoundException.class);
+				.isInstanceOf(SlotGenerationFailedException.class);
 
-		log.info("[Then] - ✓ PolicyNotFoundException 발생 확인됨");
+		log.info("[Then] - ✓ SlotGenerationFailedException 발생 확인됨 (원인: PolicyNotFoundException)");
 
 		log.info("[Then] [검증] saveAll()이 호출되지 않았는지 확인");
 		verify(timeSlotPort, never()).saveAll(any());

@@ -1,5 +1,6 @@
 package com.teambind.springproject.room.infrastructure.persistence;
 
+import com.teambind.springproject.config.TestKafkaConfig;
 import com.teambind.springproject.config.TestRedisConfig;
 import com.teambind.springproject.room.domain.port.TimeSlotPort;
 import com.teambind.springproject.room.entity.RoomTimeSlot;
@@ -30,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 @SpringBootTest
 @ActiveProfiles("test")
-@Import(TestRedisConfig.class)
+@Import({TestRedisConfig.class, TestKafkaConfig.class})
 @Transactional
 @DisplayName("TimeSlotJpaAdapter 통합 테스트")
 class TimeSlotJpaAdapterIntegrationTest {

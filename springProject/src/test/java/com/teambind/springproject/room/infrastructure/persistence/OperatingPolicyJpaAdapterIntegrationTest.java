@@ -1,5 +1,6 @@
 package com.teambind.springproject.room.infrastructure.persistence;
 
+import com.teambind.springproject.config.TestKafkaConfig;
 import com.teambind.springproject.config.TestRedisConfig;
 import com.teambind.springproject.room.domain.port.OperatingPolicyPort;
 import com.teambind.springproject.room.entity.RoomOperatingPolicy;
@@ -32,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 @SpringBootTest
 @ActiveProfiles("test")
-@Import(TestRedisConfig.class)
+@Import({TestRedisConfig.class, TestKafkaConfig.class})
 @Transactional
 @DisplayName("OperatingPolicyJpaAdapter 통합 테스트")
 class OperatingPolicyJpaAdapterIntegrationTest {
@@ -162,14 +163,33 @@ class OperatingPolicyJpaAdapterIntegrationTest {
 		Long room2Id = 202L;
 		Long room3Id = 203L;
 
+		// 각 정책에 대해 별도의 schedule 인스턴스 생성 (JPA 공유 참조 문제 방지)
+		List<WeeklySlotTime> slotTimes1 = List.of(
+				WeeklySlotTime.of(DayOfWeek.MONDAY, LocalTime.of(9, 0)),
+				WeeklySlotTime.of(DayOfWeek.MONDAY, LocalTime.of(10, 0))
+		);
+		WeeklySlotSchedule schedule1 = WeeklySlotSchedule.of(slotTimes1);
+
+		List<WeeklySlotTime> slotTimes2 = List.of(
+				WeeklySlotTime.of(DayOfWeek.TUESDAY, LocalTime.of(9, 0)),
+				WeeklySlotTime.of(DayOfWeek.TUESDAY, LocalTime.of(10, 0))
+		);
+		WeeklySlotSchedule schedule2 = WeeklySlotSchedule.of(slotTimes2);
+
+		List<WeeklySlotTime> slotTimes3 = List.of(
+				WeeklySlotTime.of(DayOfWeek.WEDNESDAY, LocalTime.of(9, 0)),
+				WeeklySlotTime.of(DayOfWeek.WEDNESDAY, LocalTime.of(10, 0))
+		);
+		WeeklySlotSchedule schedule3 = WeeklySlotSchedule.of(slotTimes3);
+
 		RoomOperatingPolicy policy1 = RoomOperatingPolicy.create(
-				room1Id, schedule, RecurrencePattern.EVERY_WEEK, List.of()
+				room1Id, schedule1, RecurrencePattern.EVERY_WEEK, List.of()
 		);
 		RoomOperatingPolicy policy2 = RoomOperatingPolicy.create(
-				room2Id, schedule, RecurrencePattern.ODD_WEEK, List.of()
+				room2Id, schedule2, RecurrencePattern.ODD_WEEK, List.of()
 		);
 		RoomOperatingPolicy policy3 = RoomOperatingPolicy.create(
-				room3Id, schedule, RecurrencePattern.EVEN_WEEK, List.of()
+				room3Id, schedule3, RecurrencePattern.EVEN_WEEK, List.of()
 		);
 
 		operatingPolicyPort.save(policy1);
