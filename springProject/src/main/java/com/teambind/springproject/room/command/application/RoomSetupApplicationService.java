@@ -3,18 +3,17 @@ package com.teambind.springproject.room.command.application;
 import com.teambind.springproject.common.exceptions.domain.RequestNotFoundException;
 import com.teambind.springproject.message.publish.EventPublisher;
 import com.teambind.springproject.room.command.dto.RoomOperatingPolicySetupRequest;
-import com.teambind.springproject.room.query.dto.RoomSetupResponse;
-import com.teambind.springproject.room.query.dto.SlotGenerationStatusResponse;
 import com.teambind.springproject.room.command.dto.WeeklySlotDto;
+import com.teambind.springproject.room.domain.port.OperatingPolicyPort;
+import com.teambind.springproject.room.domain.port.SlotGenerationRequestPort;
 import com.teambind.springproject.room.entity.RoomOperatingPolicy;
 import com.teambind.springproject.room.entity.SlotGenerationRequest;
 import com.teambind.springproject.room.entity.enums.RecurrencePattern;
 import com.teambind.springproject.room.entity.vo.WeeklySlotSchedule;
 import com.teambind.springproject.room.entity.vo.WeeklySlotTime;
 import com.teambind.springproject.room.event.event.SlotGenerationRequestedEvent;
-import com.teambind.springproject.room.repository.RoomOperatingPolicyRepository;
-import com.teambind.springproject.room.repository.SlotGenerationRequestRepository;
-import lombok.RequiredArgsConstructor;
+import com.teambind.springproject.room.query.dto.RoomSetupResponse;
+import com.teambind.springproject.room.query.dto.SlotGenerationStatusResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,18 +27,34 @@ import java.util.UUID;
 
 /**
  * 룸 초기 설정 Application Service.
- * <p>
- * 룸의 초기 데이터 셋업을 담당한다.
+ *
+ * <p>룸의 초기 데이터 셋업을 담당한다.
  * 운영 정책 저장 후 비동기로 슬롯을 생성한다.
+ *
+ * <p>Hexagonal Architecture 적용:
+ * <ul>
+ *   <li>Infrastructure 계층(JPA)에 직접 의존하지 않고 Port 인터페이스에 의존
+ *   <li>DIP (Dependency Inversion Principle) 준수
+ *   <li>Use Case 조율만 담당 (비즈니스 로직은 DomainService/Entity에 위임)
+ * </ul>
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class RoomSetupApplicationService {
 
-	private final RoomOperatingPolicyRepository policyRepository;
-	private final SlotGenerationRequestRepository requestRepository;
+	private final OperatingPolicyPort operatingPolicyPort;
+	private final SlotGenerationRequestPort slotGenerationRequestPort;
 	private final EventPublisher eventPublisher;
+
+	public RoomSetupApplicationService(
+			OperatingPolicyPort operatingPolicyPort,
+			SlotGenerationRequestPort slotGenerationRequestPort,
+			EventPublisher eventPublisher
+	) {
+		this.operatingPolicyPort = operatingPolicyPort;
+		this.slotGenerationRequestPort = slotGenerationRequestPort;
+		this.eventPublisher = eventPublisher;
+	}
 
 	/**
 	 * 룸 운영 정책을 설정하고 슬롯 생성을 요청한다.
@@ -72,14 +87,14 @@ public class RoomSetupApplicationService {
 		}
 		WeeklySlotSchedule weeklySchedule = WeeklySlotSchedule.of(slotTimes);
 
-		// 3. RoomOperatingPolicy 생성 및 저장
+		// 3. RoomOperatingPolicy 생성 및 저장 (Port 사용)
 		RoomOperatingPolicy policy = RoomOperatingPolicy.create(
 				request.getRoomId(),
 				weeklySchedule,
 				recurrencePattern,
 				Collections.emptyList() // 초기 설정 시 휴무일 없음
 		);
-		policyRepository.save(policy);
+		operatingPolicyPort.save(policy);
 
 		log.info("Room operating policy saved: roomId={}, policyId={}",
 				request.getRoomId(), policy.getPolicyId());
@@ -91,14 +106,14 @@ public class RoomSetupApplicationService {
 		// 4. 요청 ID 생성
 		String requestId = UUID.randomUUID().toString();
 
-		// 5. 슬롯 생성 요청을 DB에 저장
+		// 5. 슬롯 생성 요청을 DB에 저장 (Port 사용)
 		SlotGenerationRequest generationRequest = SlotGenerationRequest.create(
 				requestId,
 				request.getRoomId(),
 				startDate,
 				endDate
 		);
-		requestRepository.save(generationRequest);
+		slotGenerationRequestPort.save(generationRequest);
 
 		log.info("Slot generation request saved: requestId={}, dateRange={} to {}",
 				requestId, startDate, endDate);
@@ -135,7 +150,7 @@ public class RoomSetupApplicationService {
 	public SlotGenerationStatusResponse getStatus(String requestId) {
 		log.info("Querying slot generation status: requestId={}", requestId);
 
-		SlotGenerationRequest request = requestRepository.findById(requestId)
+		SlotGenerationRequest request = slotGenerationRequestPort.findById(requestId)
 				.orElseThrow(() -> new RequestNotFoundException(
 						"Slot generation request not found: " + requestId
 				));

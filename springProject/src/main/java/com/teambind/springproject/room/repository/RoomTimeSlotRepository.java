@@ -115,4 +115,16 @@ public interface RoomTimeSlotRepository extends JpaRepository<RoomTimeSlot, Long
 			@Param("startDate") LocalDate startDate,
 			@Param("endDate") LocalDate endDate,
 			@Param("status") SlotStatus status);
+
+	/**
+	 * 만료된 PENDING 슬롯을 조회한다.
+	 *
+	 * @param status          슬롯 상태 (PENDING)
+	 * @param expirationTime 만료 시간
+	 * @return 만료된 슬롯 목록
+	 */
+	@Query("SELECT r FROM RoomTimeSlot r WHERE r.status = :status AND r.lastUpdated < :expirationTime")
+	List<RoomTimeSlot> findByStatusAndLastUpdatedBefore(
+			@Param("status") SlotStatus status,
+			@Param("expirationTime") java.time.LocalDateTime expirationTime);
 }

@@ -1,14 +1,12 @@
 package com.teambind.springproject.room.command.domain.service;
 
 import com.teambind.springproject.common.exceptions.domain.SlotNotFoundException;
+import com.teambind.springproject.room.domain.port.TimeSlotPort;
 import com.teambind.springproject.room.entity.RoomTimeSlot;
-import com.teambind.springproject.room.entity.enums.SlotStatus;
 import com.teambind.springproject.room.event.event.SlotCancelledEvent;
 import com.teambind.springproject.room.event.event.SlotConfirmedEvent;
 import com.teambind.springproject.room.event.event.SlotReservedEvent;
 import com.teambind.springproject.room.event.event.SlotRestoredEvent;
-import com.teambind.springproject.room.repository.RoomTimeSlotRepository;
-import com.teambind.springproject.room.command.domain.service.TimeSlotManagementService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -16,28 +14,33 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
 /**
  * 시간 슬롯 상태 관리 서비스 구현체.
+ *
+ * <p>Hexagonal Architecture 적용:
+ * <ul>
+ *   <li>Infrastructure 계층(JPA)에 직접 의존하지 않고 Port 인터페이스에 의존
+ *   <li>DIP (Dependency Inversion Principle) 준수
+ * </ul>
  */
 @Service
 @Transactional
 public class TimeSlotManagementServiceImpl implements TimeSlotManagementService {
-	
+
 	private static final Logger log = LoggerFactory.getLogger(TimeSlotManagementServiceImpl.class);
 	private static final int PENDING_EXPIRATION_MINUTES = 15;
-	
-	private final RoomTimeSlotRepository slotRepository;
+
+	private final TimeSlotPort timeSlotPort;
 	private final ApplicationEventPublisher eventPublisher;
-	
+
 	public TimeSlotManagementServiceImpl(
-			RoomTimeSlotRepository slotRepository,
+			TimeSlotPort timeSlotPort,
 			ApplicationEventPublisher eventPublisher
 	) {
-		this.slotRepository = slotRepository;
+		this.timeSlotPort = timeSlotPort;
 		this.eventPublisher = eventPublisher;
 	}
 	
@@ -49,11 +52,11 @@ public class TimeSlotManagementServiceImpl implements TimeSlotManagementService 
 			Long reservationId
 	) {
 		RoomTimeSlot slot = findSlot(roomId, slotDate, slotTime);
-		
+
 		// 도메인 로직: 상태 전이
 		slot.markAsPending(reservationId);
-		slotRepository.save(slot);
-		
+		timeSlotPort.save(slot);
+
 		// 이벤트 발행
 		SlotReservedEvent event = SlotReservedEvent.of(
 				roomId,
@@ -62,7 +65,7 @@ public class TimeSlotManagementServiceImpl implements TimeSlotManagementService 
 				reservationId
 		);
 		eventPublisher.publishEvent(event);
-		
+
 		log.info("Slot marked as pending: slotId={}, roomId={}, reservationId={}",
 				slot.getSlotId(), roomId, reservationId);
 	}
@@ -70,17 +73,17 @@ public class TimeSlotManagementServiceImpl implements TimeSlotManagementService 
 	@Override
 	public void confirmSlot(Long roomId, LocalDate slotDate, LocalTime slotTime) {
 		RoomTimeSlot slot = findSlot(roomId, slotDate, slotTime);
-		
+
 		Long reservationId = slot.getReservationId();
-		
+
 		// 도메인 로직: 상태 전이
 		slot.confirm();
-		slotRepository.save(slot);
-		
+		timeSlotPort.save(slot);
+
 		// 이벤트 발행
 		SlotConfirmedEvent event = SlotConfirmedEvent.of(reservationId);
 		eventPublisher.publishEvent(event);
-		
+
 		log.info("Slot confirmed: slotId={}, roomId={}, reservationId={}",
 				slot.getSlotId(), roomId, reservationId);
 	}
@@ -88,38 +91,34 @@ public class TimeSlotManagementServiceImpl implements TimeSlotManagementService 
 	@Override
 	public void cancelSlot(Long roomId, LocalDate slotDate, LocalTime slotTime) {
 		RoomTimeSlot slot = findSlot(roomId, slotDate, slotTime);
-		
+
 		Long reservationId = slot.getReservationId();
-		
+
 		// 도메인 로직: 상태 전이
 		slot.cancel();
-		slotRepository.save(slot);
-		
+		timeSlotPort.save(slot);
+
 		// 이벤트 발행
 		SlotCancelledEvent event = SlotCancelledEvent.of(
 				reservationId,
 				"User cancelled"
 		);
 		eventPublisher.publishEvent(event);
-		
+
 		log.info("Slot cancelled: slotId={}, roomId={}, reservationId={}",
 				slot.getSlotId(), roomId, reservationId);
 	}
-	
+
 	@Override
 	public void cancelSlotsByReservationId(Long reservationId) {
-		// 예약 ID로 모든 슬롯 조회 (JPQL 사용)
-		List<RoomTimeSlot> slots = slotRepository
-				.findAll()
-				.stream()
-				.filter(slot -> reservationId.equals(slot.getReservationId()))
-				.toList();
-		
+		// Port를 통해 예약 ID로 슬롯 조회
+		List<RoomTimeSlot> slots = timeSlotPort.findByReservationId(reservationId);
+
 		for (RoomTimeSlot slot : slots) {
 			slot.cancel();
 		}
 
-		slotRepository.saveAll(slots);
+		timeSlotPort.saveAll(slots);
 
 		// 이벤트 발행 (한 번만)
 		SlotCancelledEvent event = SlotCancelledEvent.of(
@@ -127,22 +126,15 @@ public class TimeSlotManagementServiceImpl implements TimeSlotManagementService 
 				"Reservation cancelled"
 		);
 		eventPublisher.publishEvent(event);
-		
+
 		log.info("Cancelled {} slots for reservationId={}", slots.size(), reservationId);
 	}
-	
+
 	@Override
 	public int restoreExpiredPendingSlots() {
-		LocalDateTime expirationTime = LocalDateTime.now().minusMinutes(PENDING_EXPIRATION_MINUTES);
-		
-		// PENDING 상태이고 만료된 슬롯 조회
-		List<RoomTimeSlot> expiredSlots = slotRepository
-				.findAll()
-				.stream()
-				.filter(slot -> slot.getStatus() == SlotStatus.PENDING)
-				.filter(slot -> slot.getLastUpdated().isBefore(expirationTime))
-				.toList();
-		
+		// Port를 통해 만료된 PENDING 슬롯 조회
+		List<RoomTimeSlot> expiredSlots = timeSlotPort.findExpiredPendingSlots(PENDING_EXPIRATION_MINUTES);
+
 		for (RoomTimeSlot slot : expiredSlots) {
 			// 먼저 취소 처리
 			slot.cancel();
@@ -157,20 +149,20 @@ public class TimeSlotManagementServiceImpl implements TimeSlotManagementService 
 			eventPublisher.publishEvent(event);
 		}
 
-		slotRepository.saveAll(expiredSlots);
-		
+		timeSlotPort.saveAll(expiredSlots);
+
 		if (!expiredSlots.isEmpty()) {
 			log.info("Restored {} expired pending slots", expiredSlots.size());
 		}
-		
+
 		return expiredSlots.size();
 	}
-	
+
 	/**
 	 * 슬롯을 조회한다. 없으면 예외를 던진다.
 	 */
 	private RoomTimeSlot findSlot(Long roomId, LocalDate slotDate, LocalTime slotTime) {
-		return slotRepository
+		return timeSlotPort
 				.findByRoomIdAndSlotDateAndSlotTime(roomId, slotDate, slotTime)
 				.orElseThrow(() -> new SlotNotFoundException(roomId, slotDate.toString(), slotTime.toString()));
 	}

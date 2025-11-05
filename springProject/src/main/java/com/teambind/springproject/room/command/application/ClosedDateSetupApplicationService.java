@@ -4,14 +4,13 @@ import com.teambind.springproject.common.exceptions.domain.RequestNotFoundExcept
 import com.teambind.springproject.message.publish.EventPublisher;
 import com.teambind.springproject.room.command.dto.ClosedDateDto;
 import com.teambind.springproject.room.command.dto.ClosedDateSetupRequest;
-import com.teambind.springproject.room.query.dto.ClosedDateSetupResponse;
+import com.teambind.springproject.room.domain.port.ClosedDateUpdateRequestPort;
+import com.teambind.springproject.room.domain.port.OperatingPolicyPort;
 import com.teambind.springproject.room.entity.ClosedDateUpdateRequest;
 import com.teambind.springproject.room.entity.RoomOperatingPolicy;
 import com.teambind.springproject.room.entity.vo.ClosedDateRange;
 import com.teambind.springproject.room.event.event.ClosedDateUpdateRequestedEvent;
-import com.teambind.springproject.room.repository.ClosedDateUpdateRequestRepository;
-import com.teambind.springproject.room.repository.RoomOperatingPolicyRepository;
-import lombok.RequiredArgsConstructor;
+import com.teambind.springproject.room.query.dto.ClosedDateSetupResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,17 +21,33 @@ import java.util.UUID;
 
 /**
  * 휴무일 설정 Application Service.
- * <p>
- * 룸의 휴무일을 설정하고, 이미 생성된 슬롯의 상태를 비동기로 업데이트한다.
+ *
+ * <p>룸의 휴무일을 설정하고, 이미 생성된 슬롯의 상태를 비동기로 업데이트한다.
+ *
+ * <p>Hexagonal Architecture 적용:
+ * <ul>
+ *   <li>Infrastructure 계층(JPA)에 직접 의존하지 않고 Port 인터페이스에 의존
+ *   <li>DIP (Dependency Inversion Principle) 준수
+ *   <li>Use Case 조율만 담당 (비즈니스 로직은 DomainService/Entity에 위임)
+ * </ul>
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class ClosedDateSetupApplicationService {
 
-	private final RoomOperatingPolicyRepository policyRepository;
-	private final ClosedDateUpdateRequestRepository updateRequestRepository;
+	private final OperatingPolicyPort operatingPolicyPort;
+	private final ClosedDateUpdateRequestPort updateRequestPort;
 	private final EventPublisher eventPublisher;
+
+	public ClosedDateSetupApplicationService(
+			OperatingPolicyPort operatingPolicyPort,
+			ClosedDateUpdateRequestPort updateRequestPort,
+			EventPublisher eventPublisher
+	) {
+		this.operatingPolicyPort = operatingPolicyPort;
+		this.updateRequestPort = updateRequestPort;
+		this.eventPublisher = eventPublisher;
+	}
 
 	/**
 	 * 휴무일을 설정하고 슬롯 업데이트를 요청한다.
@@ -51,8 +66,8 @@ public class ClosedDateSetupApplicationService {
 		log.info("Closed date setup requested: roomId={}, closedDateCount={}",
 				request.getRoomId(), request.getClosedDates().size());
 
-		// 1. RoomOperatingPolicy 조회
-		RoomOperatingPolicy policy = policyRepository.findByRoomId(request.getRoomId())
+		// 1. RoomOperatingPolicy 조회 (Port 사용)
+		RoomOperatingPolicy policy = operatingPolicyPort.findByRoomId(request.getRoomId())
 				.orElseThrow(() -> new RequestNotFoundException(
 						"Room operating policy not found for roomId: " + request.getRoomId()
 				));
@@ -105,7 +120,7 @@ public class ClosedDateSetupApplicationService {
 			policy.addClosedDate(range);
 		}
 
-		policyRepository.save(policy);
+		operatingPolicyPort.save(policy);
 
 		log.info("Closed dates added to policy: roomId={}, policyId={}, count={}",
 				request.getRoomId(), policy.getPolicyId(), closedDateRanges.size());
@@ -113,13 +128,13 @@ public class ClosedDateSetupApplicationService {
 		// 3. 요청 ID 생성
 		String requestId = UUID.randomUUID().toString();
 
-		// 4. 업데이트 요청을 DB에 저장
+		// 4. 업데이트 요청을 DB에 저장 (Port 사용)
 		ClosedDateUpdateRequest updateRequest = ClosedDateUpdateRequest.create(
 				requestId,
 				request.getRoomId(),
 				request.getClosedDates().size()
 		);
-		updateRequestRepository.save(updateRequest);
+		updateRequestPort.save(updateRequest);
 
 		log.info("Closed date update request saved: requestId={}", requestId);
 
