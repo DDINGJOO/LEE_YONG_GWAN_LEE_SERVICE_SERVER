@@ -2,7 +2,6 @@ package com.teambind.springproject.space.service;
 
 import com.teambind.springproject.space.entity.RoomTimeSlot;
 import com.teambind.springproject.space.entity.enums.SlotStatus;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -16,7 +15,7 @@ import java.util.List;
  *   슬롯 가용성 체크
  *
  */
-@Service
+
 public interface TimeSlotQueryService {
 	
 	/**

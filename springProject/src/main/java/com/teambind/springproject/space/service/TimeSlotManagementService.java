@@ -1,7 +1,5 @@
 package com.teambind.springproject.space.service;
 
-import org.springframework.stereotype.Service;
-
 /**
  * 시간 슬롯 상태 관리 서비스.
  *
@@ -13,7 +11,7 @@ import org.springframework.stereotype.Service;
  *   동시성 제어 (Optimistic/Pessimistic Lock)
  *
  */
-@Service
+
 public interface TimeSlotManagementService {
 	
 	/**

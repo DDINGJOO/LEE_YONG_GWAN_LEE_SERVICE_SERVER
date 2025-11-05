@@ -1,7 +1,5 @@
 package com.teambind.springproject.space.service;
 
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 
 /**
@@ -15,7 +13,7 @@ import java.time.LocalDate;
  *   SlotUnit 조회 및 슬롯 생성 로직
  *
  */
-@Service
+
 public interface TimeSlotGenerationService {
 	
 	/**

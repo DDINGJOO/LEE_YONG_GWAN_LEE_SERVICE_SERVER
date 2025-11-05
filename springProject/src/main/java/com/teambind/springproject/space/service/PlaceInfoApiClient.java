@@ -1,7 +1,6 @@
 package com.teambind.springproject.space.service;
 
 import com.teambind.springproject.space.entity.enums.SlotUnit;
-import org.springframework.stereotype.Service;
 
 /**
  * Place Info Service와 통신하는 API 클라이언트.
@@ -13,7 +12,7 @@ import org.springframework.stereotype.Service;
  *   외부 서비스 장애 대응 (Fallback, Circuit Breaker)
  *
  */
-@Service
+
 public interface PlaceInfoApiClient {
 	
 	/**

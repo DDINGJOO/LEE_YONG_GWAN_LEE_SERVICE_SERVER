@@ -4,7 +4,6 @@ import com.teambind.springproject.space.entity.RoomOperatingPolicy;
 import com.teambind.springproject.space.entity.enums.RecurrencePattern;
 import com.teambind.springproject.space.entity.vo.ClosedDateRange;
 import com.teambind.springproject.space.entity.vo.WeeklySlotSchedule;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -19,7 +18,7 @@ import java.util.List;
  *   휴무일 관리
  *
  */
-@Service
+
 public interface RoomOperatingPolicyService {
 	
 	/**
