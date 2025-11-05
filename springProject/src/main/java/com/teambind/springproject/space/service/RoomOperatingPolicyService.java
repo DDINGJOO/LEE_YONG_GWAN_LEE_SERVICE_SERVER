@@ -10,13 +10,13 @@ import java.util.List;
 /**
  * 룸 운영 정책 관리 서비스.
  *
- * <p>주요 책임:
+ * 주요 책임:
  *
- * <ul>
- *   <li>정책 등록 및 초기 슬롯 생성
- *   <li>정책 조회 및 수정
- *   <li>휴무일 관리
- * </ul>
+ *
+ *  정책 등록 및 초기 슬롯 생성
+ *   정책 조회 및 수정
+ *   휴무일 관리
+ *
  */
 public interface RoomOperatingPolicyService {
 	

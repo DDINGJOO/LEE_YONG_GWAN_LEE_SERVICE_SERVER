@@ -5,13 +5,13 @@ import java.time.LocalDate;
 /**
  * 시간 슬롯 생성 서비스.
  *
- * <p>주요 책임:
+ * 주요 책임:
  *
- * <ul>
- *   <li>정책 기반 슬롯 배치 생성
- *   <li>Rolling Window 유지 (매일 배치)
- *   <li>SlotUnit 조회 및 슬롯 생성 로직
- * </ul>
+ *
+ *   정책 기반 슬롯 배치 생성
+ *   Rolling Window 유지 (매일 배치)
+ *   SlotUnit 조회 및 슬롯 생성 로직
+ *
  */
 public interface TimeSlotGenerationService {
 	

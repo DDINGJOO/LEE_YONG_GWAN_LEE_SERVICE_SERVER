@@ -9,12 +9,12 @@ import java.util.Optional;
 /**
  * RoomOperatingPolicy에 대한 데이터 접근 계층.
  *
- * <p>주요 책임:
+ * 주요 책임:
  *
- * <ul>
- *   <li>정책 CRUD
- *   <li>Room ID로 정책 조회
- * </ul>
+ *
+ *   정책 CRUD
+ *   Room ID로 정책 조회
+ *
  */
 @Repository
 public interface RoomOperatingPolicyRepository extends JpaRepository<RoomOperatingPolicy, Long> {

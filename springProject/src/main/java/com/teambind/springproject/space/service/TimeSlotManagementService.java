@@ -3,13 +3,13 @@ package com.teambind.springproject.space.service;
 /**
  * 시간 슬롯 상태 관리 서비스.
  *
- * <p>주요 책임:
+ * 주요 책임:
  *
- * <ul>
- *   <li>예약 이벤트에 따른 슬롯 상태 변경
- *   <li>Redis 캐시와 DB 동기화
- *   <li>동시성 제어 (Optimistic/Pessimistic Lock)
- * </ul>
+ *
+ *   예약 이벤트에 따른 슬롯 상태 변경
+ *   Redis 캐시와 DB 동기화
+ *   동시성 제어 (Optimistic/Pessimistic Lock)
+ *
  */
 public interface TimeSlotManagementService {
 	

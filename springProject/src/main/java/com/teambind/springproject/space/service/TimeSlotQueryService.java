@@ -9,14 +9,11 @@ import java.util.List;
 
 /**
  * 시간 슬롯 조회 서비스.
+ * 주요 책임:
+ *   날짜/시간별 슬롯 조회
+ *   예약 가능한 슬롯 필터링
+ *   슬롯 가용성 체크
  *
- * <p>주요 책임:
- *
- * <ul>
- *   <li>날짜/시간별 슬롯 조회
- *   <li>예약 가능한 슬롯 필터링
- *   <li>슬롯 가용성 체크
- * </ul>
  */
 public interface TimeSlotQueryService {
 	

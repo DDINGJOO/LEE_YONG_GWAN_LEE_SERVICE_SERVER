@@ -16,13 +16,13 @@ import java.util.Optional;
 /**
  * RoomTimeSlot에 대한 데이터 접근 계층.
  *
- * <p>주요 책임:
+ * 주요 책임:
  *
- * <ul>
- *   <li>슬롯 조회 (Room, 날짜, 시간, 상태별)
- *   <li>슬롯 배치 생성/삭제
- *   <li>Rolling Window 유지 (어제 슬롯 삭제)
- * </ul>
+ *
+ *   슬롯 조회 (Room, 날짜, 시간, 상태별)
+ *   슬롯 배치 생성/삭제
+ *   Rolling Window 유지 (어제 슬롯 삭제)
+ * 
  */
 @Repository
 public interface RoomTimeSlotRepository extends JpaRepository<RoomTimeSlot, Long> {

@@ -19,7 +19,7 @@ spring:
 
 
   datasource:
-    url: jdbc:mariadb://${DATABASE_HOST}:${DATABASE_PORT}/profiles
+    url: jdbc:mariadb://${DATABASE_HOST}:${DATABASE_PORT}/profiles?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8mb4
     username: ${DATABASE_USER_NAME}
     password: ${DATABASE_PASSWORD}
 
@@ -34,6 +34,8 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MariaDBDialect
+        jdbc:
+          time_zone: Asia/Seoul
 
   data:
     redis:

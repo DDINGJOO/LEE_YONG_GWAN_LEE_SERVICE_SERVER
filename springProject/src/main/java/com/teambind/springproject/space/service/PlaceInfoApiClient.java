@@ -5,12 +5,12 @@ import com.teambind.springproject.space.entity.enums.SlotUnit;
 /**
  * Place Info Service와 통신하는 API 클라이언트.
  *
- * <p>주요 책임:
+ * 주요 책임:
  *
- * <ul>
- *   <li>Room의 SlotUnit 조회
- *   <li>외부 서비스 장애 대응 (Fallback, Circuit Breaker)
- * </ul>
+ *
+ *   Room의 SlotUnit 조회
+ *   외부 서비스 장애 대응 (Fallback, Circuit Breaker)
+ *
  */
 public interface PlaceInfoApiClient {
 	

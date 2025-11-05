@@ -13,20 +13,20 @@ import java.time.LocalDate;
 /**
  * 시간 슬롯 관리 스케줄러.
  *
- * <p>주요 책임:
+ * 주요 책임:
  *
- * <ul>
- *   <li>매일 Rolling Window 유지 (어제 슬롯 삭제, 60일 후 슬롯 생성)
- *   <li>만료된 PENDING 슬롯 복구
- * </ul>
  *
- * <p>분산 환경 고려:
+ *   매일 Rolling Window 유지 (어제 슬롯 삭제, 60일 후 슬롯 생성)
+ *   만료된 PENDING 슬롯 복구
  *
- * <ul>
- *   <li>ShedLock을 사용하여 중복 실행 방지
- *   <li>lockAtMostFor: 작업 실패 시 자동 Lock 해제
- *   <li>lockAtLeastFor: 최소 실행 간격 보장
- * </ul>
+ *
+ * 분산 환경 고려:
+ *
+ *
+ *   ShedLock을 사용하여 중복 실행 방지
+ *   lockAtMostFor: 작업 실패 시 자동 Lock 해제
+ *   lockAtLeastFor: 최소 실행 간격 보장
+ *
  */
 @Component
 public class TimeSlotScheduler {
