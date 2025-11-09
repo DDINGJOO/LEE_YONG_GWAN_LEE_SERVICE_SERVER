@@ -73,9 +73,18 @@ public class ReservationApplicationService {
 		);
 
 		try {
+			log.info("Publishing SlotReservedEvent to Kafka - topic: {}, eventType: {}, payload: {{roomId: {}, slotDate: {}, startTimes: {}, reservationId: {}, occurredAt: {}}}",
+					event.getTopic(),
+					event.getEventTypeName(),
+					event.getRoomId(),
+					event.getSlotDate(),
+					event.getStartTimes(),
+					event.getReservationId(),
+					event.getOccurredAt());
+
 			eventPublisher.publish(event);
-			log.info("SlotReservedEvent published: reservationId={}, roomId={}, slotDate={}",
-					request.reservationId(), request.roomId(), request.slotDate());
+
+			log.info("SlotReservedEvent published successfully: reservationId={}", request.reservationId());
 		} catch (Exception e) {
 			log.error("Failed to publish SlotReservedEvent: reservationId={}, error={}",
 					request.reservationId(), e.getMessage(), e);
