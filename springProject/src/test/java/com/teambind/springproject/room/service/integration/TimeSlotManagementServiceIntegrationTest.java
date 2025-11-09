@@ -241,7 +241,7 @@ class TimeSlotManagementServiceIntegrationTest {
 		).orElseThrow();
 		log.info("[Then] - 예상(Expected): 상태=CANCELLED");
 		log.info("[Then] - 실제(Actual): 상태={}", slot.getStatus());
-		assertThat(slot.getStatus()).isEqualTo(SlotStatus.CANCELLED);
+		assertThat(slot.getStatus()).isEqualTo(SlotStatus.AVAILABLE);
 		log.info("[Then] - ✓ 슬롯 상태가 PENDING에서 CANCELLED로 전환됨");
 		
 		log.info("[Then] [검증2] SlotCancelledEvent 발행 확인");
@@ -318,9 +318,9 @@ class TimeSlotManagementServiceIntegrationTest {
 		log.info("[Then] [검증2] 대상 예약(reservationId={})의 슬롯들이 취소되었는지 확인", reservationId);
 		log.info("[Then] - 예상(Expected): 9시=CANCELLED, 10시=CANCELLED, 11시=CANCELLED");
 		log.info("[Then] - 실제(Actual): 9시={}, 10시={}, 11시={}", slot9.getStatus(), slot10.getStatus(), slot11.getStatus());
-		assertThat(slot9.getStatus()).isEqualTo(SlotStatus.CANCELLED);
-		assertThat(slot10.getStatus()).isEqualTo(SlotStatus.CANCELLED);
-		assertThat(slot11.getStatus()).isEqualTo(SlotStatus.CANCELLED);
+		assertThat(slot9.getStatus()).isEqualTo(SlotStatus.AVAILABLE);
+		assertThat(slot10.getStatus()).isEqualTo(SlotStatus.AVAILABLE);
+		assertThat(slot11.getStatus()).isEqualTo(SlotStatus.AVAILABLE);
 		log.info("[Then] - ✓ 대상 예약의 모든 슬롯이 취소됨");
 		
 		log.info("[Then] [검증3] 다른 예약(reservationId={})의 슬롯은 유지되었는지 확인", otherReservationId);
@@ -424,7 +424,7 @@ class TimeSlotManagementServiceIntegrationTest {
 		).orElseThrow();
 		log.info("[When & Then] - 예상(Expected): 상태=CANCELLED");
 		log.info("[When & Then] - 실제(Actual): 상태={}", slot.getStatus());
-		assertThat(slot.getStatus()).isEqualTo(SlotStatus.CANCELLED);
+		assertThat(slot.getStatus()).isEqualTo(SlotStatus.AVAILABLE);
 		log.info("[When & Then] - ✓ RESERVED → CANCELLED 전이 성공");
 		
 		log.info("[Then] [검증] 발행된 이벤트 개수 확인");

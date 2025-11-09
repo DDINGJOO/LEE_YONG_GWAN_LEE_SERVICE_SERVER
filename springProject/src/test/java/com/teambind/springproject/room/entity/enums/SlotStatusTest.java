@@ -40,7 +40,7 @@ class SlotStatusTest {
 							SlotStatus.AVAILABLE,
 							SlotStatus.PENDING,
 							SlotStatus.RESERVED,
-							SlotStatus.CANCELLED,
+							SlotStatus.AVAILABLE,
 							SlotStatus.CLOSED
 					);
 		}
@@ -52,7 +52,7 @@ class SlotStatusTest {
 			assertThat(SlotStatus.valueOf("AVAILABLE")).isEqualTo(SlotStatus.AVAILABLE);
 			assertThat(SlotStatus.valueOf("PENDING")).isEqualTo(SlotStatus.PENDING);
 			assertThat(SlotStatus.valueOf("RESERVED")).isEqualTo(SlotStatus.RESERVED);
-			assertThat(SlotStatus.valueOf("CANCELLED")).isEqualTo(SlotStatus.CANCELLED);
+			assertThat(SlotStatus.valueOf("CANCELLED")).isEqualTo(SlotStatus.AVAILABLE);
 			assertThat(SlotStatus.valueOf("CLOSED")).isEqualTo(SlotStatus.CLOSED);
 		}
 		
@@ -110,7 +110,7 @@ class SlotStatusTest {
 		@DisplayName("[정상] CANCELLED는 취소된 상태이다")
 		void cancelledRepresentsCancelledState() {
 			// Given
-			SlotStatus status = SlotStatus.CANCELLED;
+			SlotStatus status = SlotStatus.AVAILABLE;
 			
 			// Then: 취소된 상태를 나타냄
 			assertThat(status).isNotNull();

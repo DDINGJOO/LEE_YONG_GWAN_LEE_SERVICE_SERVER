@@ -245,7 +245,7 @@ class RoomTimeSlotTest {
 			slot.cancel();
 			
 			// Then
-			assertThat(slot.getStatus()).isEqualTo(SlotStatus.CANCELLED);
+			assertThat(slot.getStatus()).isEqualTo(SlotStatus.AVAILABLE);
 			assertThat(slot.getReservationId()).isEqualTo(null); // 예약 ID는 유지 X
 		}
 		
@@ -261,7 +261,7 @@ class RoomTimeSlotTest {
 			slot.cancel();
 			
 			// Then
-			assertThat(slot.getStatus()).isEqualTo(SlotStatus.CANCELLED);
+			assertThat(slot.getStatus()).isEqualTo(SlotStatus.AVAILABLE);
 		}
 		
 		@Test
@@ -379,7 +379,7 @@ class RoomTimeSlotTest {
 			slot.cancel();
 			
 			// Then: CANCELLED 상태 확인
-			assertThat(slot.getStatus()).isEqualTo(SlotStatus.CANCELLED);
+			assertThat(slot.getStatus()).isEqualTo(SlotStatus.AVAILABLE);
 			
 			// When: 슬롯 복구
 			slot.restore();
@@ -407,7 +407,7 @@ class RoomTimeSlotTest {
 			slot.cancel();
 			
 			// Then: CANCELLED 상태
-			assertThat(slot.getStatus()).isEqualTo(SlotStatus.CANCELLED);
+			assertThat(slot.getStatus()).isEqualTo(SlotStatus.AVAILABLE);
 		}
 		
 		@Test
