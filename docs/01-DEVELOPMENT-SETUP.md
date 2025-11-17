@@ -1,7 +1,7 @@
 # 개발 환경 설정
 
-**Version**: 1.0.0
-**Last Updated**: 2025-01-15
+**Version**: 1.1.0
+**Last Updated**: 2025-01-17
 
 ## 목차
 
@@ -183,6 +183,19 @@ spring:
       host: localhost
       port: 6379
       password: # Redis 비밀번호 (없으면 생략)
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: room-service-group
+
+room:
+  timeSlot:
+    pending:
+      expiration:
+        minutes: 40
+    rollingWindow:
+      days: 30
 
 logging:
   level:

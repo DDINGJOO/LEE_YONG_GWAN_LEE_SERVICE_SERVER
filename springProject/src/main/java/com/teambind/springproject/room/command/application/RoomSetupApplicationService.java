@@ -15,6 +15,7 @@ import com.teambind.springproject.room.event.event.SlotGenerationRequestedEvent;
 import com.teambind.springproject.room.query.dto.RoomSetupResponse;
 import com.teambind.springproject.room.query.dto.SlotGenerationStatusResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,7 +46,10 @@ public class RoomSetupApplicationService {
 	private final OperatingPolicyPort operatingPolicyPort;
 	private final SlotGenerationRequestPort slotGenerationRequestPort;
 	private final EventPublisher eventPublisher;
-	
+
+	@Value("${room.timeSlot.rollingWindow.days:30}")
+	private int rollingWindowDays;
+
 	public RoomSetupApplicationService(
 			OperatingPolicyPort operatingPolicyPort,
 			SlotGenerationRequestPort slotGenerationRequestPort,
@@ -98,10 +102,13 @@ public class RoomSetupApplicationService {
 		
 		log.info("Room operating policy saved: roomId={}, policyId={}",
 				request.getRoomId(), policy.getPolicyId());
-		
-		// 3. 슬롯 생성 날짜 범위 계산 (오늘부터 2개월)
+
+		// 3. 슬롯 생성 날짜 범위 계산 (오늘부터 N일, 설정값 사용)
 		LocalDate startDate = LocalDate.now();
-		LocalDate endDate = startDate.plusMonths(2);
+		LocalDate endDate = startDate.plusDays(rollingWindowDays);
+
+		log.debug("Slot generation date range calculated: startDate={}, endDate={}, rollingWindowDays={}",
+				startDate, endDate, rollingWindowDays);
 		
 		// 4. 요청 ID 생성
 		String requestId = UUID.randomUUID().toString();

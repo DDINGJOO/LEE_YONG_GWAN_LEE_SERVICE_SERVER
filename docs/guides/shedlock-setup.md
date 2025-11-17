@@ -1,7 +1,7 @@
 # ShedLock 설정 가이드
 
-**Version**: 1.0.0
-**Last Updated**: 2025-01-15
+**Version**: 1.1.0
+**Last Updated**: 2025-01-17
 
 ## 목차
 
@@ -103,7 +103,8 @@ public void maintainRollingWindow() {
     lockAtLeastFor = "PT30S"  // 최소 30초 간격
 )
 public void restoreExpiredPendingSlots() {
-    // 만료된 PENDING 슬롯 복구
+    // 40분 이상 PENDING 상태인 슬롯을 AVAILABLE로 복구
+    // room.timeSlot.pending.expiration.minutes 설정값 사용
 }
 ```
 
@@ -111,6 +112,7 @@ public void restoreExpiredPendingSlots() {
 
 - `lockAtMostFor = PT2M`: 빠른 작업이므로 2분 내 완료 예상
 - `lockAtLeastFor = PT30S`: 짧은 간격으로 실행되므로 30초 간격 보장
+- **만료 시간**: application.yaml의 `room.timeSlot.pending.expiration.minutes` 설정 (기본 40분)
 
 ---
 

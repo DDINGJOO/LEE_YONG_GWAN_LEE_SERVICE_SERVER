@@ -39,7 +39,7 @@ public class SlotCancelledEventHandler implements EventHandler<SlotCancelledEven
 		
 		int cancelledCount = 0;
 		
-		// 모든 슬롯을 취소 상태로 변경
+		// 모든 슬롯을 이용가능 상태로 변경
 		for (RoomTimeSlot slot : slots) {
 			try {
 				slot.cancel();

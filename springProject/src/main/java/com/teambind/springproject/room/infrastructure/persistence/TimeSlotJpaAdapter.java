@@ -93,8 +93,14 @@ public class TimeSlotJpaAdapter implements TimeSlotPort {
 	@Transactional(readOnly = true)
 	public List<RoomTimeSlot> findExpiredPendingSlots(int expirationMinutes) {
 		LocalDateTime expirationTime = LocalDateTime.now().minusMinutes(expirationMinutes);
-		
+
 		// 성능 최적화: Custom Query 사용 (findAll() + stream 제거)
 		return repository.findByStatusAndLastUpdatedBefore(SlotStatus.PENDING, expirationTime);
+	}
+
+	@Override
+	public List<RoomTimeSlot> findByRoomIdAndSlotDateAndSlotTimeInWithLock(
+			Long roomId, LocalDate slotDate, List<LocalTime> slotTimes) {
+		return repository.findByRoomIdAndSlotDateAndSlotTimeInWithLock(roomId, slotDate, slotTimes);
 	}
 }

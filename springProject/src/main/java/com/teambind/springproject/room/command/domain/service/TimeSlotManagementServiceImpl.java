@@ -3,6 +3,7 @@ package com.teambind.springproject.room.command.domain.service;
 import com.teambind.springproject.common.exceptions.domain.SlotNotFoundException;
 import com.teambind.springproject.room.domain.port.TimeSlotPort;
 import com.teambind.springproject.room.entity.RoomTimeSlot;
+import com.teambind.springproject.room.entity.enums.SlotStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 시간 슬롯 상태 관리 서비스 구현체.
@@ -116,6 +118,70 @@ public class TimeSlotManagementServiceImpl implements TimeSlotManagementService 
 		return expiredSlots.size();
 	}
 	
+	@Override
+	public int markMultipleSlotsAsPending(
+			Long roomId,
+			LocalDate slotDate,
+			List<LocalTime> slotTimes,
+			Long reservationId
+	) {
+		log.info("Attempting to reserve multiple slots: roomId={}, slotDate={}, slotTimes={}, reservationId={}",
+				roomId, slotDate, slotTimes, reservationId);
+
+		// 1. Pessimistic Lock을 사용하여 슬롯 조회 (SELECT ... FOR UPDATE)
+		List<RoomTimeSlot> slots = timeSlotPort.findByRoomIdAndSlotDateAndSlotTimeInWithLock(
+				roomId, slotDate, slotTimes
+		);
+
+		// 2. 요청한 슬롯 수와 조회된 슬롯 수 확인
+		if (slots.size() != slotTimes.size()) {
+			List<LocalTime> foundTimes = slots.stream()
+					.map(RoomTimeSlot::getSlotTime)
+					.collect(Collectors.toList());
+			List<LocalTime> missingTimes = slotTimes.stream()
+					.filter(time -> !foundTimes.contains(time))
+					.collect(Collectors.toList());
+
+			log.error("Some slots not found: roomId={}, slotDate={}, missingTimes={}",
+					roomId, slotDate, missingTimes);
+			throw new IllegalStateException(
+					String.format("일부 슬롯을 찾을 수 없습니다. roomId=%d, slotDate=%s, missingTimes=%s",
+							roomId, slotDate, missingTimes)
+			);
+		}
+
+		// 3. 모든 슬롯이 AVAILABLE 상태인지 확인
+		List<RoomTimeSlot> unavailableSlots = slots.stream()
+				.filter(slot -> slot.getStatus() != SlotStatus.AVAILABLE)
+				.collect(Collectors.toList());
+
+		if (!unavailableSlots.isEmpty()) {
+			String unavailableInfo = unavailableSlots.stream()
+					.map(slot -> String.format("%s(%s)", slot.getSlotTime(), slot.getStatus()))
+					.collect(Collectors.joining(", "));
+
+			log.error("Some slots are not available: roomId={}, slotDate={}, unavailable={}",
+					roomId, slotDate, unavailableInfo);
+			throw new IllegalStateException(
+					String.format("일부 슬롯을 예약할 수 없습니다. roomId=%d, slotDate=%s, unavailable=%s",
+							roomId, slotDate, unavailableInfo)
+			);
+		}
+
+		// 4. 모든 슬롯을 PENDING 상태로 변경
+		for (RoomTimeSlot slot : slots) {
+			slot.markAsPending(reservationId);
+		}
+
+		// 5. 일괄 저장
+		timeSlotPort.saveAll(slots);
+
+		log.info("Successfully marked {} slots as pending: roomId={}, slotDate={}, reservationId={}",
+				slots.size(), roomId, slotDate, reservationId);
+
+		return slots.size();
+	}
+
 	/**
 	 * 슬롯을 조회한다. 없으면 예외를 던진다.
 	 */

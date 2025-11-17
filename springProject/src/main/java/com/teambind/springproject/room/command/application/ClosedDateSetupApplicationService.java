@@ -21,11 +21,11 @@ import java.util.UUID;
 
 /**
  * 휴무일 설정 Application Service.
- * <p>
+ *
  * 룸의 휴무일을 설정하고, 이미 생성된 슬롯의 상태를 비동기로 업데이트한다.
- * <p>
+ *
  * Hexagonal Architecture 적용:
- * <p>
+ *
  * Infrastructure 계층(JPA)에 직접 의존하지 않고 Port 인터페이스에 의존
  * DIP (Dependency Inversion Principle) 준수
  * Use Case 조율만 담당 (비즈니스 로직은 DomainService/Entity에 위임)
@@ -51,7 +51,7 @@ public class ClosedDateSetupApplicationService {
 	
 	/**
 	 * 휴무일을 설정하고 슬롯 업데이트를 요청한다.
-	 * <p>
+	 *
 	 * 플로우:
 	 * 1. RoomOperatingPolicy에 휴무일 추가
 	 * 2. 업데이트 요청을 DB에 저장 (상태: REQUESTED)

@@ -9,6 +9,7 @@ import com.teambind.springproject.room.entity.RoomTimeSlot;
 import com.teambind.springproject.room.entity.enums.SlotUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +33,10 @@ public class TimeSlotGenerationServiceImpl implements TimeSlotGenerationService 
 	private final TimeSlotPort timeSlotPort;
 	private final OperatingPolicyPort operatingPolicyPort;
 	private final PlaceInfoApiClient placeInfoApiClient;
-	
+
+	@Value("${room.timeSlot.rollingWindow.days:30}")
+	private int rollingWindowDays;
+
 	public TimeSlotGenerationServiceImpl(
 			TimeSlotPort timeSlotPort,
 			OperatingPolicyPort operatingPolicyPort,
@@ -134,18 +138,19 @@ public class TimeSlotGenerationServiceImpl implements TimeSlotGenerationService 
 		try {
 			// 1. 미래 슬롯 삭제 (Port 사용)
 			timeSlotPort.deleteByRoomId(roomId);
-			
+
 			log.info("Deleted future slots for roomId={}", roomId);
-			
-			// 2. 60일치 슬롯 재생성
+
+			// 2. N일치 슬롯 재생성 (설정값 사용)
 			LocalDate today = LocalDate.now();
-			LocalDate endDate = today.plusDays(60);
+			LocalDate endDate = today.plusDays(rollingWindowDays);
 			int regenerated = generateSlotsForDateRange(roomId, today, endDate);
-			
-			log.info("Regenerated {} slots for roomId={}", regenerated, roomId);
-			
+
+			log.info("Regenerated {} slots for roomId={} (rollingWindowDays={})",
+					regenerated, roomId, rollingWindowDays);
+
 			return regenerated;
-			
+
 		} catch (Exception e) {
 			log.error("Failed to regenerate future slots for roomId={}", roomId, e);
 			throw SlotGenerationFailedException.forRoom(roomId, e);

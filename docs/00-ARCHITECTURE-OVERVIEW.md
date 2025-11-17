@@ -1,7 +1,7 @@
 # 아키텍처 개요
 
-**Version**: 1.0.0
-**Last Updated**: 2025-01-15
+**Version**: 1.1.0
+**Last Updated**: 2025-01-17
 
 ## 목차
 
@@ -21,9 +21,10 @@ Room Time Slot Management Service는 음악 스튜디오, 공연장, 연습실 �
 ### 핵심 책임
 
 - **운영 정책 관리**: 요일별, 시간별 운영 시간 및 반복 패턴(매주/홀수주/짝수주) 관리
-- **시간 슬롯 생성**: Rolling Window 방식으로 2개월치 예약 가능 슬롯 자동 생성
+- **시간 슬롯 생성**: Rolling Window 방식으로 30일치 예약 가능 슬롯 자동 생성 (설정 가능)
 - **슬롯 상태 관리**: 예약 가능(AVAILABLE) → 예약 대기(PENDING) → 예약 확정(RESERVED) 상태 관리
 - **휴무일 관리**: 날짜 기반, 시간 기반, 패턴 기반 휴무일 설정
+- **다중 슬롯 예약**: Pessimistic Lock 기반 동시성 제어로 여러 슬롯 동시 예약 지원
 
 ### 제외 범위
 
@@ -93,6 +94,7 @@ RoomTimeSlot (시간 슬롯)
 **Command (쓰기)**:
 - `RoomSetupApplicationService`: 운영 정책 설정 + 슬롯 생성 요청
 - `ClosedDateSetupApplicationService`: 휴무일 설정 + 슬롯 업데이트
+- `ReservationApplicationService`: 단일/다중 슬롯 예약 처리
 
 **Query (읽기)**:
 - `TimeSlotQueryService`: 슬롯 조회, 가용 시간 조회
@@ -106,7 +108,8 @@ RoomTimeSlot (시간 슬롯)
 ┌─────────────────────────────────────────────────────────┐
 │              Presentation Layer                          │
 │  └── Controller (REST API)                              │
-│       └── RoomSetupController                           │
+│       ├── RoomSetupController                           │
+│       └── ReservationController                         │
 └─────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────┐
@@ -114,6 +117,7 @@ RoomTimeSlot (시간 슬롯)
 │  └── ApplicationService (UseCase 조율)                  │
 │       ├── RoomSetupApplicationService (Command)         │
 │       ├── ClosedDateSetupApplicationService (Command)   │
+│       ├── ReservationApplicationService (Command)       │
 │       └── TimeSlotQueryService (Query)                  │
 └─────────────────────────────────────────────────────────┘
                            ↓
@@ -276,7 +280,7 @@ public enum RecurrencePattern {
    - MySQL vs PostgreSQL vs MongoDB 비교
 
 2. **[ADR-002: Rolling Window 전략](adr/002-rolling-window-strategy.md)**
-   - 2개월 선행 생성 방식
+   - 30일 선행 생성 방식 (설정 가능)
    - 일일 배치 스케줄러 구현
 
 3. **[ADR-003: Hexagonal Architecture 적용](adr/003-hexagonal-architecture.md)**
@@ -326,9 +330,20 @@ public void markAsPending(Long reservationId) {
     ↓
 어제 날짜 슬롯 삭제
     ↓
-오늘 + 60일 슬롯 생성
+오늘 + 30일 슬롯 생성 (설정: room.timeSlot.rollingWindow.days)
     ↓
-항상 2개월치 슬롯 유지
+항상 30일치 슬롯 유지
+```
+
+**PENDING 슬롯 만료 관리**:
+```
+5분마다 실행
+    ↓
+[Scheduler + ShedLock]
+    ↓
+40분 이상 PENDING 상태 슬롯 조회
+    ↓
+AVAILABLE 상태로 복구
 ```
 
 **동시성 제어**:
@@ -352,20 +367,22 @@ INDEX idx_cleanup (slot_date)
 
 ## 확장 계획
 
-### Phase 1 (현재)
+### Phase 1 (완료)
 - 기본 운영 정책 관리
 - Rolling Window 슬롯 생성
 - 상태 관리 및 조회
+- Kafka 이벤트 기반 비동기 처리
 
-### Phase 2 (계획)
-- Kafka 이벤트 통합
-- 예약 서비스와 연동
-- 실시간 슬롯 상태 동기화
+### Phase 2 (현재)
+- 다중 슬롯 예약 기능 (Pessimistic Lock)
+- 예약 만료 자동 복구
+- PENDING 슬롯 관리
 
 ### Phase 3 (계획)
 - Redis 캐싱 레이어 추가
 - 성능 최적화
 - 모니터링 대시보드
+- Circuit Breaker 패턴 적용
 
 ---
 

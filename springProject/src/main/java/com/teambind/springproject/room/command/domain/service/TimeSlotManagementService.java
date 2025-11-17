@@ -70,4 +70,26 @@ public interface TimeSlotManagementService {
 	 * @return 복구된 슬롯 개수
 	 */
 	int restoreExpiredPendingSlots();
+
+	/**
+	 * 여러 슬롯을 한 번에 예약 대기 상태(PENDING)로 변경한다.
+	 *
+	 * 동시성 제어:
+	 * - Pessimistic Lock (SELECT ... FOR UPDATE) 사용
+	 * - 트랜잭션 내에서 모든 슬롯을 잠그고 상태 검증
+	 * - 하나라도 예약 불가능하면 전체 롤백
+	 *
+	 * @param roomId        룸 ID
+	 * @param slotDate      슬롯 날짜
+	 * @param slotTimes     슬롯 시간 리스트
+	 * @param reservationId 예약 ID
+	 * @return 예약된 슬롯 개수
+	 * @throws IllegalStateException 슬롯이 예약 불가능한 경우
+	 */
+	int markMultipleSlotsAsPending(
+			Long roomId,
+			java.time.LocalDate slotDate,
+			java.util.List<java.time.LocalTime> slotTimes,
+			Long reservationId
+	);
 }

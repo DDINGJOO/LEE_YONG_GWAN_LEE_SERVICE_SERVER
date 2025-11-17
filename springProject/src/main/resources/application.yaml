@@ -15,6 +15,6 @@ room:
   timeSlot:
     pending:
       expiration:
-        minutes: 30
+        minutes: 40
     rollingWindow:
       days: ${ROLLING_WINDOW_DAYS:30}

@@ -1,11 +1,12 @@
 # Room Time Slot Management Service
 
-**Version**: 1.0.0
+**Version**: 1.1.0
 **Team**: Teambind_dev_backend Team
 **Maintainer**: DDINGJOO
 **Type**: Spring Boot REST API Microservice
 **Java**: 17
 **Build Tool**: Gradle
+**Last Updated**: 2025-01-17
 
 ## 목차
 
@@ -30,10 +31,11 @@ MSA(Microservices Architecture) 환경에서 동작하며, **DDD(Domain-Driven D
 ### 핵심 목표
 
 - **유연한 운영 정책 관리**: 요일별, 시간별, 반복 패턴(매주/홀수주/짝수주) 기반 운영 시간 설정
-- **자동화된 슬롯 생성**: Rolling Window 방식으로 항상 2개월치 예약 가능 슬롯 유지
+- **자동화된 슬롯 생성**: Rolling Window 방식으로 항상 30일치 예약 가능 슬롯 유지 (설정 변경 가능)
 - **비동기 대용량 처리**: Kafka 기반 이벤트 드리븐 아키텍처로 수천 개 슬롯 생성 성능 보장
 - **분산 환경 안정성**: ShedLock을 활용한 분산 스케줄러 동시성 제어
 - **예약 상태 관리**: 슬롯 상태 전이(AVAILABLE → PENDING → RESERVED) 도메인 모델 구현
+- **동시성 제어**: Pessimistic Lock 기반 다중 슬롯 예약 동시성 보장
 
 ---
 
@@ -70,9 +72,9 @@ public enum RecurrencePattern {
 ### 2. 시간 슬롯 자동 생성
 
 #### 2-1. Rolling Window 전략
-- **2개월 선행 생성**: 항상 현재일 기준 2개월 후까지 슬롯 유지
+- **30일 선행 생성**: 항상 현재일 기준 30일 후까지 슬롯 유지 (설정 변경 가능: `room.timeSlot.rollingWindow.days`)
 - **스케줄러 기반 자동화**: 매일 자정 익일 슬롯 자동 생성
-- **과거 데이터 정리**: 과거 2개월 이전 데이터 자동 삭제 (보관 정책 적용 시 아카이빙 가능)
+- **과거 데이터 정리**: 과거 데이터 자동 삭제 (보관 정책 적용 시 아카이빙 가능)
 
 #### 2-2. 정책 기반 지능형 생성
 ```java
@@ -682,6 +684,91 @@ DELETE FROM room_time_slots WHERE slot_date < ?
   "closedDateCount": 2
 }
 ```
+
+### 4. 예약 가능 슬롯 조회
+
+#### GET /api/v1/reservations/available-slots
+
+특정 룸의 특정 날짜에 예약 가능한 슬롯 목록을 조회합니다.
+
+**Query Parameters**:
+- `roomId` (required): 룸 ID
+- `date` (required): 조회할 날짜 (ISO 8601 형식: YYYY-MM-DD)
+
+**Response** (200 OK):
+```json
+[
+  {
+    "slotTime": "09:00",
+    "status": "AVAILABLE"
+  },
+  {
+    "slotTime": "10:00",
+    "status": "AVAILABLE"
+  },
+  {
+    "slotTime": "11:00",
+    "status": "AVAILABLE"
+  }
+]
+```
+
+### 5. 단일 슬롯 예약
+
+#### POST /api/v1/reservations
+
+단일 슬롯을 예약 대기 상태(PENDING)로 변경합니다.
+
+**Request Body**:
+```json
+{
+  "roomId": 1,
+  "slotDate": "2025-01-20",
+  "slotTime": "14:00",
+  "reservationId": 12345
+}
+```
+
+**Response** (200 OK):
+```json
+{}
+```
+
+### 6. 다중 슬롯 예약 (신규 기능)
+
+#### POST /api/v1/reservations/multi
+
+특정 날짜의 여러 시간 슬롯을 한 번에 예약 대기 상태로 변경합니다.
+
+**특징**:
+- Pessimistic Lock (SELECT FOR UPDATE) 사용으로 동시성 문제 해결
+- 예약 ID 자동 생성 (Snowflake ID Generator)
+- 모든 슬롯이 AVAILABLE 상태인지 검증 후 일괄 처리
+- 하나라도 예약 불가능하면 전체 롤백
+
+**Request Body**:
+```json
+{
+  "roomId": 1,
+  "slotDate": "2025-01-20",
+  "slotTimes": ["14:00", "15:00", "16:00"]
+}
+```
+
+**Response** (200 OK):
+```json
+{
+  "reservationId": 567890123456789,
+  "roomId": 1,
+  "slotDate": "2025-01-20",
+  "reservedSlotTimes": ["14:00", "15:00", "16:00"]
+}
+```
+
+**Error Responses**:
+- `400 Bad Request`: 요청 파라미터 누락 또는 유효하지 않음
+- `404 Not Found`: 일부 슬롯을 찾을 수 없음
+- `409 Conflict`: 일부 슬롯이 이미 예약되어 있음 (AVAILABLE 상태가 아님)
 
 ---
 

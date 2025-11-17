@@ -113,4 +113,18 @@ public interface TimeSlotPort {
 	 * @return 만료된 슬롯 목록
 	 */
 	List<RoomTimeSlot> findExpiredPendingSlots(int expirationMinutes);
+
+	/**
+	 * Pessimistic Lock을 사용하여 여러 슬롯을 한 번에 조회한다.
+	 *
+	 * 동시성 제어를 위해 SELECT ... FOR UPDATE 쿼리를 실행한다.
+	 * 트랜잭션이 커밋될 때까지 다른 트랜잭션이 해당 슬롯을 수정할 수 없다.
+	 *
+	 * @param roomId    룸 ID
+	 * @param slotDate  슬롯 날짜
+	 * @param slotTimes 슬롯 시각 리스트
+	 * @return 조회된 슬롯 목록 (잠금 상태)
+	 */
+	List<RoomTimeSlot> findByRoomIdAndSlotDateAndSlotTimeInWithLock(
+			Long roomId, LocalDate slotDate, List<LocalTime> slotTimes);
 }

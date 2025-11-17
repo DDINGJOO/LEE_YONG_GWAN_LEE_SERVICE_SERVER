@@ -21,7 +21,7 @@ public enum SlotStatus {
 	/**
 	 * 예약 확정
 	 */
-	RESERVED,
+	RESERVED, // 결제완료
 	
 	
 	/**

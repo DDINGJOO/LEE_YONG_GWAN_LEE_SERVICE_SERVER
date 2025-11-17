@@ -1,7 +1,7 @@
 # ADR-002: Rolling Window 전략
 
 **Status**: Accepted
-**Date**: 2025-01-15
+**Date**: 2025-01-15 (Updated: 2025-01-17)
 **Decision Makers**: Teambind_dev_backend Team
 **Technical Story**: 시간 슬롯 생성 및 유지 관리 전략
 
@@ -43,16 +43,24 @@ Room Time Slot Management Service는 예약 가능한 시간 슬롯을 미리 �
 
 ## Considered Options
 
-### Option 1: Rolling Window (2개월 선행 생성)
+### Option 1: Rolling Window (설정 가능한 선행 생성)
 
 **개념**:
 ```
-Today                    +60 days
+Today                    +N days
   ↓                         ↓
-[==========================]  ← 항상 2개월치 슬롯 유지
+[==========================]  ← 항상 N일치 슬롯 유지
   ↑
 Yesterday's slots 삭제
-Today + 60일의 slots 생성
+Today + N일의 slots 생성
+```
+
+**설정**:
+```yaml
+room:
+  timeSlot:
+    rollingWindow:
+      days: 30  # 기본값 30일 (변경 가능)
 ```
 
 **구현**:
@@ -131,21 +139,23 @@ public List<RoomTimeSlot> getAvailableSlots(Long roomId, LocalDate date) {
 
 ## Decision Outcome
 
-**선택: Option 1 - Rolling Window (2개월 선행 생성)**
+**선택: Option 1 - Rolling Window (설정 가능한 선행 생성, 기본 30일)**
 
 ### 선택 이유
 
 1. **예약 가능 기간 보장**
-   - 항상 60일 후까지 조회 가능
+   - 설정 가능한 선행 생성 기간 (기본 30일)
    - 사용자 경험 일관성 보장
+   - 비즈니스 요구사항에 따라 유연하게 조정 가능
 
 2. **조회 성능**
    - 미리 생성된 데이터 조회 (SELECT만 수행)
    - 조회 API 응답 시간 10ms 이내
 
 3. **스토리지 최적화**
-   - 2개월치만 유지 (룸당 약 1,500개 슬롯)
+   - 30일치 유지 (룸당 약 720개 슬롯)
    - 과거 데이터 자동 정리
+   - 필요시 설정으로 기간 확장 가능 (60일, 90일 등)
 
 4. **운영 정책 변경 대응**
    - 미래 슬롯만 재생성 (부분 재생성)

@@ -2,7 +2,9 @@ package com.teambind.springproject.room.repository;
 
 import com.teambind.springproject.room.entity.RoomTimeSlot;
 import com.teambind.springproject.room.entity.enums.SlotStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -127,4 +129,22 @@ public interface RoomTimeSlotRepository extends JpaRepository<RoomTimeSlot, Long
 	List<RoomTimeSlot> findByStatusAndLastUpdatedBefore(
 			@Param("status") SlotStatus status,
 			@Param("expirationTime") java.time.LocalDateTime expirationTime);
+
+	/**
+	 * Pessimistic Lock을 사용하여 여러 슬롯을 한 번에 조회한다.
+	 *
+	 * 동시성 제어를 위해 SELECT ... FOR UPDATE 쿼리를 실행한다.
+	 * 트랜잭션이 커밋될 때까지 다른 트랜잭션이 해당 슬롯을 수정할 수 없다.
+	 *
+	 * @param roomId    룸 ID
+	 * @param slotDate  슬롯 날짜
+	 * @param slotTimes 슬롯 시각 리스트
+	 * @return 조회된 슬롯 목록 (잠금 상태)
+	 */
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("SELECT r FROM RoomTimeSlot r WHERE r.roomId = :roomId AND r.slotDate = :slotDate AND r.slotTime IN :slotTimes")
+	List<RoomTimeSlot> findByRoomIdAndSlotDateAndSlotTimeInWithLock(
+			@Param("roomId") Long roomId,
+			@Param("slotDate") LocalDate slotDate,
+			@Param("slotTimes") List<LocalTime> slotTimes);
 }
