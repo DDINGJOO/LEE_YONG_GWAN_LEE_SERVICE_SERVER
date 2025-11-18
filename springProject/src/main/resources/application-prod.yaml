@@ -1,0 +1,87 @@
+spring:
+  kafka:
+    bootstrap-servers:
+      - ${KAFKA_BROKER1:-kafka1:9091}
+      - ${KAFKA_BROKER2:-kafka2:9092}
+      - ${KAFKA_BROKER3:-kafka3:9093}
+    producer:
+      retries: 3
+      batch-size: 16384
+      buffer-memory: 33554432
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      compression-type: snappy
+    consumer:
+      group-id: room-operation-consumer-group-prod
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      enable-auto-commit: false
+      max-poll-records: 100
+    listener:
+      ack-mode: manual
+
+  datasource:
+    url: jdbc:mariadb://${DATABASE_HOST:-mariadb}:${DATABASE_PORT:-3306}/${DATABASE_NAME:-profiles}?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8mb4
+    username: ${DATABASE_USER_NAME}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.mariadb.jdbc.Driver
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 20
+      minimum-idle: 10
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      auto-commit: true
+      connection-test-query: SELECT 1
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.MariaDBDialect
+        jdbc:
+          time_zone: Asia/Seoul
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        batch_versioned_data: true
+        default_batch_fetch_size: 100
+
+  data:
+    redis:
+      repositories:
+        enabled: false
+      host: ${REDIS_HOST:-redis}
+      port: ${REDIS_PORT:-6379}
+      password: ${REDIS_PASSWORD:#{null}}
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+          max-wait: 2000ms
+
+  sql:
+    init:
+      mode: never
+
+# Logging Configuration
+logging:
+  level:
+    root: ${LOG_LEVEL:-INFO}
+    com.teambind: ${LOG_LEVEL:-INFO}
+    org.springframework: WARN
+    org.hibernate.SQL: ${SQL_LOG_LEVEL:-WARN}
+    org.hibernate.type.descriptor.sql: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: /var/log/room-service/application.log
+    max-size: 10MB
+    max-history: 30

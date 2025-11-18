@@ -31,6 +31,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+    // MariaDB driver
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+
     // ShedLock for distributed scheduler lock
     implementation 'net.javacrumbs.shedlock:shedlock-spring:5.10.0'
     implementation 'net.javacrumbs.shedlock:shedlock-provider-redis-spring:5.10.0'

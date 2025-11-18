@@ -32,19 +32,16 @@ public class TimeSlotGenerationServiceImpl implements TimeSlotGenerationService 
 	
 	private final TimeSlotPort timeSlotPort;
 	private final OperatingPolicyPort operatingPolicyPort;
-	private final PlaceInfoApiClient placeInfoApiClient;
 
 	@Value("${room.timeSlot.rollingWindow.days:30}")
 	private int rollingWindowDays;
 
 	public TimeSlotGenerationServiceImpl(
 			TimeSlotPort timeSlotPort,
-			OperatingPolicyPort operatingPolicyPort,
-			PlaceInfoApiClient placeInfoApiClient
+			OperatingPolicyPort operatingPolicyPort
 	) {
 		this.timeSlotPort = timeSlotPort;
 		this.operatingPolicyPort = operatingPolicyPort;
-		this.placeInfoApiClient = placeInfoApiClient;
 	}
 	
 	@Override
@@ -56,12 +53,13 @@ public class TimeSlotGenerationServiceImpl implements TimeSlotGenerationService 
 			RoomOperatingPolicy policy = operatingPolicyPort
 					.findByRoomId(roomId)
 					.orElseThrow(() -> new PolicyNotFoundException(roomId, true));
-			// 2. SlotUnit 조회 (Place Info Service)
-			SlotUnit slotUnit = placeInfoApiClient.getSlotUnit(roomId);
-			
+
+			// 2. 정책에 저장된 SlotUnit 사용
+			SlotUnit slotUnit = policy.getSlotUnit();
+
 			// 3. 정책 기반 슬롯 생성
 			List<RoomTimeSlot> slots = policy.generateSlotsFor(date, slotUnit);
-			
+
 			// 4. DB 저장 (배치 처리 - Port 사용)
 			List<RoomTimeSlot> savedSlots = timeSlotPort.saveAll(slots);
 			

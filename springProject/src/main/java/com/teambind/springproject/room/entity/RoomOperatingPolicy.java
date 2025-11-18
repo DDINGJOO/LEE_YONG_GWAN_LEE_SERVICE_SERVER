@@ -47,7 +47,11 @@ public class RoomOperatingPolicy {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private RecurrencePattern recurrence;
-	
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "slot_unit", nullable = false)
+	private SlotUnit slotUnit;
+
 	@ElementCollection
 	@CollectionTable(name = "policy_closed_dates", joinColumns = @JoinColumn(name = "policy_id"))
 	private List<ClosedDateRange> closedDates = new ArrayList<>();
@@ -66,22 +70,25 @@ public class RoomOperatingPolicy {
 			Long roomId,
 			WeeklySlotSchedule weeklySchedule,
 			RecurrencePattern recurrence,
+			SlotUnit slotUnit,
 			List<ClosedDateRange> closedDates) {
 		this.roomId = Objects.requireNonNull(roomId, "roomId must not be null");
 		this.weeklySchedule =
 				Objects.requireNonNull(weeklySchedule, "weeklySchedule must not be null");
 		this.recurrence = Objects.requireNonNull(recurrence, "recurrence must not be null");
+		this.slotUnit = Objects.requireNonNull(slotUnit, "slotUnit must not be null");
 		this.closedDates = new ArrayList<>(closedDates);
 		this.createdAt = LocalDateTime.now();
 		this.updatedAt = LocalDateTime.now();
 	}
-	
+
 	/**
 	 * RoomOperatingPolicy 인스턴스를 생성한다.
 	 *
 	 * @param roomId         룸 ID
 	 * @param weeklySchedule 주간 운영 시간 스케줄
 	 * @param recurrence     반복 패턴
+	 * @param slotUnit       슬롯 단위
 	 * @param closedDates    휴무일 목록
 	 * @return 생성된 RoomOperatingPolicy
 	 */
@@ -89,8 +96,9 @@ public class RoomOperatingPolicy {
 			Long roomId,
 			WeeklySlotSchedule weeklySchedule,
 			RecurrencePattern recurrence,
+			SlotUnit slotUnit,
 			List<ClosedDateRange> closedDates) {
-		return new RoomOperatingPolicy(roomId, weeklySchedule, recurrence, closedDates);
+		return new RoomOperatingPolicy(roomId, weeklySchedule, recurrence, slotUnit, closedDates);
 	}
 	
 	/**
@@ -259,7 +267,11 @@ public class RoomOperatingPolicy {
 	public RecurrencePattern getRecurrence() {
 		return recurrence;
 	}
-	
+
+	public SlotUnit getSlotUnit() {
+		return slotUnit;
+	}
+
 	public List<ClosedDateRange> getClosedDates() {
 		return Collections.unmodifiableList(closedDates);
 	}
