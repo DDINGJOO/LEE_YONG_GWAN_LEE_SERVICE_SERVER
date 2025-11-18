@@ -96,6 +96,7 @@ public class RoomSetupApplicationService {
 				request.getRoomId(),
 				weeklySchedule,
 				recurrencePattern,
+				request.getSlotUnit(), // 클라이언트가 제공한 slotUnit 사용
 				Collections.emptyList() // 초기 설정 시 휴무일 없음
 		);
 		operatingPolicyPort.save(policy);

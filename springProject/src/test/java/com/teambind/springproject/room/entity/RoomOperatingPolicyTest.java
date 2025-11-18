@@ -72,7 +72,7 @@ class RoomOperatingPolicyTest {
 	
 	private RoomOperatingPolicy createBasicPolicy(RecurrencePattern recurrence) {
 		return RoomOperatingPolicy.create(
-				101L, createWeekdaySchedule(), recurrence, Collections.emptyList());
+				101L, createWeekdaySchedule(), recurrence, SlotUnit.HALF_HOUR, Collections.emptyList());
 	}
 	
 	// ============================================================
@@ -82,7 +82,7 @@ class RoomOperatingPolicyTest {
 	private RoomOperatingPolicy createPolicyWithClosedDate(
 			RecurrencePattern recurrence, ClosedDateRange closedDate) {
 		return RoomOperatingPolicy.create(
-				101L, createWeekdaySchedule(), recurrence, List.of(closedDate));
+				101L, createWeekdaySchedule(), recurrence, SlotUnit.HALF_HOUR, List.of(closedDate));
 	}
 	
 	// ============================================================
