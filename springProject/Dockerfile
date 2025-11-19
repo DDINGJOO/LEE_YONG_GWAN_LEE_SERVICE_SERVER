@@ -1,28 +1,35 @@
-# Stage 1: Build
-FROM gradle:8.5-jdk21 AS build
+# Build stage
+FROM gradle:8.5-jdk17 AS builder
 
 WORKDIR /app
 
-# Copy Gradle files
+# Copy gradle wrapper and configuration files
 COPY build.gradle settings.gradle ./
 COPY gradle ./gradle
+COPY gradlew gradlew.bat ./
+
+# Download dependencies (cached layer)
+RUN ./gradlew dependencies --no-daemon || true
 
 # Copy source code
 COPY src ./src
 
-# Build the application
-RUN gradle clean bootJar --no-daemon
+# Build application
+RUN ./gradlew clean bootJar -x test --no-daemon
 
-# Stage 2: Runtime
-FROM eclipse-temurin:21-jre
+# Runtime stage
+FROM eclipse-temurin:17-jre
 
 WORKDIR /app
+
+# Install wget for health check
+RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
 RUN groupadd -r spring && useradd -r -g spring spring
 
-# Copy built JAR from build stage
-COPY --from=build /app/build/libs/*.jar app.jar
+# Copy built JAR from builder stage
+COPY --from=builder /app/build/libs/*.jar app.jar
 
 # Change ownership
 RUN chown -R spring:spring /app
@@ -30,12 +37,15 @@ RUN chown -R spring:spring /app
 # Switch to non-root user
 USER spring:spring
 
-# Expose application port
+# Expose port
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1
 
-# Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run application with JVM optimizations
+ENTRYPOINT ["java", \
+  "-XX:+UseContainerSupport", \
+  "-XX:MaxRAMPercentage=75.0", \
+  "-XX:+UseG1GC", \
+  "-Djava.security.egd=file:/dev/./urandom", \
+  "-jar", \
+  "app.jar"]

@@ -12,9 +12,9 @@ SET time_zone = '+09:00';
 -- ============================================================
 -- 1. Sample Room Operating Policy
 -- ============================================================
--- 룸 ID 101: 매주 월-금 09:00, 13:00 운영
-INSERT INTO room_operating_policies (room_id, recurrence, created_at, updated_at)
-VALUES (101, 'EVERY_WEEK', NOW(), NOW());
+-- 룸 ID 101: 매주 월-금 09:00, 13:00 운영 (1시간 단위)
+INSERT INTO room_operating_policies (room_id, recurrence, slot_unit, created_at, updated_at)
+VALUES (101, 'EVERY_WEEK', 'HOUR', NOW(), NOW());
 
 SET @policy_id_101 = LAST_INSERT_ID();
 
@@ -50,9 +50,9 @@ VALUES (@policy_id_101, '2025-01-01', NULL, NULL, NULL);
 -- ============================================================
 -- 2. Sample Room Operating Policy (홀수주)
 -- ============================================================
--- 룸 ID 102: 홀수주 월-금 10:00, 14:00 운영
-INSERT INTO room_operating_policies (room_id, recurrence, created_at, updated_at)
-VALUES (102, 'ODD_WEEK', NOW(), NOW());
+-- 룸 ID 102: 홀수주 월-금 10:00, 14:00 운영 (30분 단위)
+INSERT INTO room_operating_policies (room_id, recurrence, slot_unit, created_at, updated_at)
+VALUES (102, 'ODD_WEEK', 'HALF_HOUR', NOW(), NOW());
 
 SET @policy_id_102 = LAST_INSERT_ID();
 

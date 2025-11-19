@@ -17,6 +17,7 @@ CREATE TABLE room_operating_policies
     policy_id  BIGINT AUTO_INCREMENT PRIMARY KEY,
     room_id    BIGINT      NOT NULL,
     recurrence VARCHAR(20) NOT NULL,
+    slot_unit VARCHAR(20) NOT NULL,
     created_at DATETIME    NOT NULL,
     updated_at DATETIME    NOT NULL,
     UNIQUE KEY uk_room_id (room_id),

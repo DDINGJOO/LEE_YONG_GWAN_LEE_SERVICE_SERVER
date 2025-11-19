@@ -2,7 +2,6 @@ package com.teambind.springproject.room.service.integration;
 
 import com.teambind.springproject.config.TestKafkaConfig;
 import com.teambind.springproject.config.TestRedisConfig;
-import com.teambind.springproject.room.command.domain.service.PlaceInfoApiClient;
 import com.teambind.springproject.room.command.domain.service.TimeSlotGenerationService;
 import com.teambind.springproject.room.entity.RoomOperatingPolicy;
 import com.teambind.springproject.room.entity.RoomTimeSlot;
