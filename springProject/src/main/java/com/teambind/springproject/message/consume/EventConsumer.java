@@ -31,6 +31,7 @@ public class EventConsumer {
 		MESSAGE_TYPE_MAP.put("SlotConfirmed", SlotConfirmedEventMessage.class);
 		MESSAGE_TYPE_MAP.put("SlotCancelled", SlotCancelledEventMessage.class);
 		MESSAGE_TYPE_MAP.put("SlotRestored", SlotRestoredEventMessage.class);
+		MESSAGE_TYPE_MAP.put("RefundCompleted", RefundCompletedEventMessage.class);
 		MESSAGE_TYPE_MAP.put("SlotGenerationRequested", SlotGenerationRequestedEventMessage.class);
 		MESSAGE_TYPE_MAP.put("ClosedDateUpdateRequested", ClosedDateUpdateRequestedEventMessage.class);
 	}
@@ -44,7 +45,7 @@ public class EventConsumer {
 	 * @param message JSON 형식의 이벤트 메시지
 	 */
 	@KafkaListener(
-			topics = {"reservation-reserved", "reservation-confirmed", "reservation-cancelled", "reservation-restored", "slot-generation-requested", "closed-date-update-requested"},
+			topics = {"reservation-reserved", "reservation-confirmed", "reservation-cancelled", "reservation-restored", "refund-completed", "slot-generation-requested", "closed-date-update-requested"},
 			groupId = "room-operation-consumer-group"
 	)
 	public void consume(String message) {
@@ -68,8 +69,8 @@ public class EventConsumer {
 			// 4. Message DTO를 Event로 변환 (ID: String → Long)
 			Event event = convertToEvent(messageDto);
 
-			// 5. 해당 이벤트를 처리할 핸들러 찾기
-			EventHandler handler = findHandler(eventType);
+			// 5. 해당 이벤트를 처리할 핸들러 찾기 (변환된 이벤트 타입 기준)
+			EventHandler handler = findHandler(event.getEventTypeName());
 			if (handler == null) {
 				log.warn("No handler found for event type: {}", eventType);
 				return;
@@ -99,6 +100,8 @@ public class EventConsumer {
 			return ((SlotCancelledEventMessage) messageDto).toEvent();
 		} else if (messageDto instanceof SlotRestoredEventMessage) {
 			return ((SlotRestoredEventMessage) messageDto).toEvent();
+		} else if (messageDto instanceof RefundCompletedEventMessage) {
+			return ((RefundCompletedEventMessage) messageDto).toEvent();
 		} else if (messageDto instanceof SlotGenerationRequestedEventMessage) {
 			return ((SlotGenerationRequestedEventMessage) messageDto).toEvent();
 		} else if (messageDto instanceof ClosedDateUpdateRequestedEventMessage) {
