@@ -9,6 +9,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+/**
+ * 도메인 이벤트를 Kafka 메시지로 발행합니다.
+ * <p>
+ * <b>새로운 이벤트 추가 시 체크리스트</b>
+ * <ol>
+ *   <li>{@link #convertToMessage(Event)}에 case 추가</li>
+ *   <li>해당 이벤트의 MessageDTO에 from() 메서드 구현</li>
+ *   <li>EventPublisherTest에 단위 테스트 추가</li>
+ *   <li>EventConsumer에 MESSAGE_TYPE_MAP 및 convertToEvent() 업데이트</li>
+ * </ol>
+ *
+ * @see EventPublisherTest#모든_도메인_이벤트가_메시지_변환을_지원해야_함()
+ */
 @Service
 @RequiredArgsConstructor
 public class EventPublisher {
@@ -25,21 +38,45 @@ public class EventPublisher {
 
 	/**
 	 * Event를 Message DTO로 변환한다.
+	 * <p>
 	 * 모든 ID 필드가 Long → String으로 변환된다.
+	 * <p>
+	 * instanceof 체인을 사용하여 이벤트 타입별로 적절한 Message DTO로 변환합니다.
+	 * 새로운 이벤트 타입 추가 시 if-else 블록을 추가해야 합니다.
+	 *
+	 * @param event 변환할 도메인 이벤트
+	 * @return Kafka 메시지로 발행할 Message DTO
+	 * @throws IllegalArgumentException 지원하지 않는 이벤트 타입인 경우
 	 */
 	private Object convertToMessage(Event event) {
-		if (event instanceof SlotReservedEvent) {
-			return SlotReservedEventMessage.from((SlotReservedEvent) event);
-		} else if (event instanceof SlotCancelledEvent) {
-			return SlotCancelledEventMessage.from((SlotCancelledEvent) event);
-		} else if (event instanceof SlotRestoredEvent) {
-			return SlotRestoredEventMessage.from((SlotRestoredEvent) event);
-		} else if (event instanceof SlotGenerationRequestedEvent) {
-			return SlotGenerationRequestedEventMessage.from((SlotGenerationRequestedEvent) event);
-		} else if (event instanceof ClosedDateUpdateRequestedEvent) {
-			return ClosedDateUpdateRequestedEventMessage.from((ClosedDateUpdateRequestedEvent) event);
+		// SlotReservedEvent
+		if (event instanceof SlotReservedEvent e) {
+			return SlotReservedEventMessage.from(e);
 		}
 
-		throw new IllegalArgumentException("Unknown event type: " + event.getClass().getName());
+		// SlotCancelledEvent
+		if (event instanceof SlotCancelledEvent e) {
+			return SlotCancelledEventMessage.from(e);
+		}
+
+		// SlotRestoredEvent
+		if (event instanceof SlotRestoredEvent e) {
+			return SlotRestoredEventMessage.from(e);
+		}
+
+		// SlotGenerationRequestedEvent
+		if (event instanceof SlotGenerationRequestedEvent e) {
+			return SlotGenerationRequestedEventMessage.from(e);
+		}
+
+		// ClosedDateUpdateRequestedEvent
+		if (event instanceof ClosedDateUpdateRequestedEvent e) {
+			return ClosedDateUpdateRequestedEventMessage.from(e);
+		}
+
+		// Unknown event type
+		throw new IllegalArgumentException(
+				"지원하지 않는 이벤트 타입입니다: " + event.getClass().getName()
+		);
 	}
 }
