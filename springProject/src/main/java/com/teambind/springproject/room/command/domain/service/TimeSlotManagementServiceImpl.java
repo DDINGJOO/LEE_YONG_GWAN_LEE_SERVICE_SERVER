@@ -48,14 +48,12 @@ public class TimeSlotManagementServiceImpl implements TimeSlotManagementService 
 			LocalTime slotTime,
 			Long reservationId
 	) {
-		RoomTimeSlot slot = findSlot(roomId, slotDate, slotTime);
+		// 단일 슬롯도 다중 슬롯 로직으로 통일 (Pessimistic Lock 적용)
+		// List.of(slotTime)으로 변환하여 markMultipleSlotsAsPending() 재사용
+		log.info("Delegating single slot reservation to multiple slots logic: roomId={}, slotDate={}, slotTime={}, reservationId={}",
+				roomId, slotDate, slotTime, reservationId);
 
-		// 도메인 로직: 상태 전이
-		slot.markAsPending(reservationId);
-		timeSlotPort.save(slot);
-
-		log.info("Slot marked as pending: slotId={}, roomId={}, reservationId={}",
-				slot.getSlotId(), roomId, reservationId);
+		markMultipleSlotsAsPending(roomId, slotDate, List.of(slotTime), reservationId);
 	}
 	
 	@Override
