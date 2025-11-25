@@ -614,28 +614,4 @@ class TimeSlotGenerationServiceIntegrationTest {
 		
 		log.info("=== [중복 생성을 시도하면 슬롯이 중복 저장된다] 테스트 성공 ===");
 	}
-	
-	/**
-	 * 테스트용 PlaceInfoApiClient Mock.
-	 */
-	@TestConfiguration
-	static class TestPlaceInfoApiClientConfig {
-		
-		@Bean
-		@Primary
-		public PlaceInfoApiClient testPlaceInfoApiClient() {
-			return new PlaceInfoApiClient() {
-				@Override
-				public SlotUnit getSlotUnit(Long roomId) {
-					return SlotUnit.HOUR; // 항상 1시간 단위 반환
-				}
-				
-				@Override
-				public boolean isHealthy() {
-					return true;
-				}
-			};
-		}
-	}
-	
 }
