@@ -85,6 +85,26 @@ public class TimeSlotManagementServiceImpl implements TimeSlotManagementService 
 	}
 	
 	@Override
+	public void confirmSlotsByReservationId(Long reservationId) {
+		// Port를 통해 예약 ID로 슬롯 조회
+		List<RoomTimeSlot> slots = timeSlotPort.findByReservationId(reservationId);
+
+		if (slots.isEmpty()) {
+			log.warn("No slots found for reservationId={}", reservationId);
+			return;
+		}
+
+		for (RoomTimeSlot slot : slots) {
+			// PENDING → RESERVED 상태 전환
+			slot.confirm();
+		}
+
+		timeSlotPort.saveAll(slots);
+
+		log.info("Confirmed {} slots for reservationId={}", slots.size(), reservationId);
+	}
+
+	@Override
 	public void cancelSlotsByReservationId(Long reservationId) {
 		// Port를 통해 예약 ID로 슬롯 조회
 		List<RoomTimeSlot> slots = timeSlotPort.findByReservationId(reservationId);

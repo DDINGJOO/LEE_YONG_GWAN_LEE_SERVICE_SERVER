@@ -30,6 +30,7 @@ public class EventConsumer {
 		MESSAGE_TYPE_MAP.put("SlotReserved", SlotReservedEventMessage.class);
 		MESSAGE_TYPE_MAP.put("SlotCancelled", SlotCancelledEventMessage.class);
 		MESSAGE_TYPE_MAP.put("SlotRestored", SlotRestoredEventMessage.class);
+		MESSAGE_TYPE_MAP.put("PaymentCompleted", PaymentCompletedEventMessage.class);
 		MESSAGE_TYPE_MAP.put("RefundCompleted", RefundCompletedEventMessage.class);
 		MESSAGE_TYPE_MAP.put("SlotGenerationRequested", SlotGenerationRequestedEventMessage.class);
 		MESSAGE_TYPE_MAP.put("ClosedDateUpdateRequested", ClosedDateUpdateRequestedEventMessage.class);
@@ -44,7 +45,7 @@ public class EventConsumer {
 	 * @param message JSON 형식의 이벤트 메시지
 	 */
 	@KafkaListener(
-			topics = {"reservation-reserved", "reservation-cancelled", "reservation-restored", "refund-completed", "slot-generation-requested", "closed-date-update-requested"},
+			topics = {"reservation-reserved", "reservation-cancelled", "reservation-restored", "payment-completed", "refund-completed", "slot-generation-requested", "closed-date-update-requested"},
 			groupId = "room-operation-consumer-group"
 	)
 	public void consume(String message) {
@@ -97,6 +98,8 @@ public class EventConsumer {
 			return ((SlotCancelledEventMessage) messageDto).toEvent();
 		} else if (messageDto instanceof SlotRestoredEventMessage) {
 			return ((SlotRestoredEventMessage) messageDto).toEvent();
+		} else if (messageDto instanceof PaymentCompletedEventMessage) {
+			return ((PaymentCompletedEventMessage) messageDto).toEvent();
 		} else if (messageDto instanceof RefundCompletedEventMessage) {
 			return ((RefundCompletedEventMessage) messageDto).toEvent();
 		} else if (messageDto instanceof SlotGenerationRequestedEventMessage) {

@@ -56,6 +56,15 @@ public interface TimeSlotManagementService {
 	void cancelSlot(Long roomId, java.time.LocalDate slotDate, java.time.LocalTime slotTime);
 	
 	/**
+	 * 예약 ID로 연관된 모든 슬롯을 확정한다.
+	 * <p>
+	 * 결제 완료 이벤트 처리 시 호출된다.
+	 *
+	 * @param reservationId 예약 ID
+	 */
+	void confirmSlotsByReservationId(Long reservationId);
+
+	/**
 	 * 예약 ID로 연관된 모든 슬롯을 취소한다.
 	 *
 	 * @param reservationId 예약 ID
