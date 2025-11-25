@@ -10,6 +10,7 @@ import com.teambind.springproject.room.entity.ClosedDateUpdateRequest;
 import com.teambind.springproject.room.entity.RoomOperatingPolicy;
 import com.teambind.springproject.room.entity.enums.GenerationStatus;
 import com.teambind.springproject.room.entity.enums.RecurrencePattern;
+import com.teambind.springproject.room.entity.enums.SlotUnit;
 import com.teambind.springproject.room.entity.vo.WeeklySlotSchedule;
 import com.teambind.springproject.room.entity.vo.WeeklySlotTime;
 import com.teambind.springproject.room.event.event.ClosedDateUpdateRequestedEvent;
@@ -71,7 +72,7 @@ class ClosedDateSetupApplicationServiceTest {
 				WeeklySlotTime.of(DayOfWeek.MONDAY, LocalTime.of(10, 0))
 		);
 		WeeklySlotSchedule schedule = WeeklySlotSchedule.of(slotTimes);
-		policy = RoomOperatingPolicy.create(roomId, schedule, RecurrencePattern.EVERY_WEEK, List.of());
+		policy = RoomOperatingPolicy.create(roomId, schedule, RecurrencePattern.EVERY_WEEK, SlotUnit.HOUR, List.of());
 		
 		// 휴무일 설정 요청: 2025-01-15 하루 종일 휴무
 		ClosedDateDto closedDateDto = new ClosedDateDto(

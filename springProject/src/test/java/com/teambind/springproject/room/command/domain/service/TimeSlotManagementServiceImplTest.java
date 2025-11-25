@@ -2,6 +2,8 @@ package com.teambind.springproject.room.command.domain.service;
 
 import com.teambind.springproject.common.exceptions.domain.SlotNotFoundException;
 import com.teambind.springproject.room.domain.port.TimeSlotPort;
+import com.teambind.springproject.room.domain.port.ClosedDateUpdateRequestPort;
+import com.teambind.springproject.room.domain.port.OperatingPolicyPort;
 import com.teambind.springproject.room.entity.RoomTimeSlot;
 import com.teambind.springproject.room.entity.enums.SlotStatus;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +39,10 @@ class TimeSlotManagementServiceImplTest {
 	
 	@Mock
 	private TimeSlotPort timeSlotPort;
+	@Mock
+	private OperatingPolicyPort operatingPolicyPort;
+	@Mock
+	private ClosedDateUpdateRequestPort closedDateUpdateRequestPort;
 
 	private TimeSlotManagementServiceImpl service;
 
@@ -51,7 +57,7 @@ class TimeSlotManagementServiceImplTest {
 	@BeforeEach
 	void setUp() {
 		// Service 생성 (Constructor Injection)
-		service = new TimeSlotManagementServiceImpl(timeSlotPort, PENDING_EXPIRATION_MINUTES);
+		service = new TimeSlotManagementServiceImpl(timeSlotPort, operatingPolicyPort, closedDateUpdateRequestPort, PENDING_EXPIRATION_MINUTES);
 
 		roomId = 100L;
 		slotDate = LocalDate.of(2025, 1, 15);

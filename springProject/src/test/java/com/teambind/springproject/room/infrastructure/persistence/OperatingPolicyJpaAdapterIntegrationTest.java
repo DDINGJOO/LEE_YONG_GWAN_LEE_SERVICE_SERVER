@@ -5,6 +5,7 @@ import com.teambind.springproject.config.TestRedisConfig;
 import com.teambind.springproject.room.domain.port.OperatingPolicyPort;
 import com.teambind.springproject.room.entity.RoomOperatingPolicy;
 import com.teambind.springproject.room.entity.enums.RecurrencePattern;
+import com.teambind.springproject.room.entity.enums.SlotUnit;
 import com.teambind.springproject.room.entity.vo.WeeklySlotSchedule;
 import com.teambind.springproject.room.entity.vo.WeeklySlotTime;
 import lombok.extern.slf4j.Slf4j;
@@ -69,7 +70,7 @@ class OperatingPolicyJpaAdapterIntegrationTest {
 		RoomOperatingPolicy policy = RoomOperatingPolicy.create(
 				roomId,
 				schedule,
-				RecurrencePattern.EVERY_WEEK,
+				RecurrencePattern.EVERY_WEEK, SlotUnit.HOUR,
 				List.of()
 		);
 		log.info("[Given] - 생성된 정책: roomId={}, recurrence={}",
@@ -116,7 +117,7 @@ class OperatingPolicyJpaAdapterIntegrationTest {
 		RoomOperatingPolicy policy = RoomOperatingPolicy.create(
 				roomId,
 				schedule,
-				RecurrencePattern.EVERY_WEEK,
+				RecurrencePattern.EVERY_WEEK, SlotUnit.HOUR,
 				List.of()
 		);
 		operatingPolicyPort.save(policy);
@@ -183,13 +184,13 @@ class OperatingPolicyJpaAdapterIntegrationTest {
 		WeeklySlotSchedule schedule3 = WeeklySlotSchedule.of(slotTimes3);
 		
 		RoomOperatingPolicy policy1 = RoomOperatingPolicy.create(
-				room1Id, schedule1, RecurrencePattern.EVERY_WEEK, List.of()
+				room1Id, schedule1, RecurrencePattern.EVERY_WEEK, SlotUnit.HOUR, List.of()
 		);
 		RoomOperatingPolicy policy2 = RoomOperatingPolicy.create(
-				room2Id, schedule2, RecurrencePattern.ODD_WEEK, List.of()
+				room2Id, schedule2, RecurrencePattern.ODD_WEEK, SlotUnit.HOUR, List.of()
 		);
 		RoomOperatingPolicy policy3 = RoomOperatingPolicy.create(
-				room3Id, schedule3, RecurrencePattern.EVEN_WEEK, List.of()
+				room3Id, schedule3, RecurrencePattern.EVEN_WEEK, SlotUnit.HOUR, List.of()
 		);
 		
 		operatingPolicyPort.save(policy1);
@@ -234,7 +235,7 @@ class OperatingPolicyJpaAdapterIntegrationTest {
 		RoomOperatingPolicy policy = RoomOperatingPolicy.create(
 				roomId,
 				schedule,
-				RecurrencePattern.EVERY_WEEK,
+				RecurrencePattern.EVERY_WEEK, SlotUnit.HOUR,
 				List.of()
 		);
 		operatingPolicyPort.save(policy);
@@ -281,7 +282,7 @@ class OperatingPolicyJpaAdapterIntegrationTest {
 		RoomOperatingPolicy policy = RoomOperatingPolicy.create(
 				roomId,
 				schedule,
-				RecurrencePattern.EVERY_WEEK,
+				RecurrencePattern.EVERY_WEEK, SlotUnit.HOUR,
 				List.of()
 		);
 		RoomOperatingPolicy savedPolicy = operatingPolicyPort.save(policy);

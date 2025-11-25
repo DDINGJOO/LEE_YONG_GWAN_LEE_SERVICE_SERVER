@@ -10,6 +10,7 @@ import com.teambind.springproject.room.entity.RoomOperatingPolicy;
 import com.teambind.springproject.room.entity.SlotGenerationRequest;
 import com.teambind.springproject.room.entity.enums.GenerationStatus;
 import com.teambind.springproject.room.entity.enums.RecurrencePattern;
+import com.teambind.springproject.room.entity.enums.SlotUnit;
 import com.teambind.springproject.room.event.event.SlotGenerationRequestedEvent;
 import com.teambind.springproject.room.query.dto.RoomSetupResponse;
 import com.teambind.springproject.room.query.dto.SlotGenerationStatusResponse;
@@ -70,7 +71,7 @@ class RoomSetupApplicationServiceTest {
 				List.of(LocalTime.of(9, 0), LocalTime.of(10, 0))
 		);
 		
-		setupRequest = new RoomOperatingPolicySetupRequest(roomId, List.of(slotDto));
+		setupRequest = new RoomOperatingPolicySetupRequest(roomId, List.of(slotDto), SlotUnit.HOUR);
 		
 		log.info("=== 테스트 데이터 초기화 ===");
 		log.info("- roomId: {}", roomId);
@@ -156,7 +157,7 @@ class RoomSetupApplicationServiceTest {
 		
 		// Given
 		log.info("[Given] Mock 동작 설정");
-		RoomOperatingPolicySetupRequest emptyRequest = new RoomOperatingPolicySetupRequest(roomId, List.of());
+		RoomOperatingPolicySetupRequest emptyRequest = new RoomOperatingPolicySetupRequest(roomId, List.of(), SlotUnit.HOUR);
 		log.info("[Given] - 빈 슬롯 목록으로 요청 생성");
 		
 		RoomOperatingPolicy savedPolicy = mock(RoomOperatingPolicy.class);
@@ -281,7 +282,7 @@ class RoomSetupApplicationServiceTest {
 		
 		RoomOperatingPolicySetupRequest multiSlotRequest = new RoomOperatingPolicySetupRequest(
 				roomId,
-				List.of(mondaySlot, tuesdaySlot)
+				List.of(mondaySlot, tuesdaySlot), SlotUnit.HOUR
 		);
 		log.info("[Given] - 여러 요일/시간 슬롯 요청 생성");
 		log.info("[Given]   - Monday: 09:00, 10:00, 11:00");

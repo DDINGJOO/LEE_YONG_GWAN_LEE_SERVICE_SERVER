@@ -104,7 +104,7 @@ class RoomOperatingPolicyTest {
 			
 			// When
 			RoomOperatingPolicy policy =
-					RoomOperatingPolicy.create(roomId, schedule, recurrence, closedDates);
+					RoomOperatingPolicy.create(roomId, schedule, recurrence, SlotUnit.HOUR, closedDates);
 			
 			// Then
 			assertThat(policy.getRoomId()).isEqualTo(roomId);
@@ -125,7 +125,7 @@ class RoomOperatingPolicyTest {
 			assertThatThrownBy(
 					() ->
 							RoomOperatingPolicy.create(
-									null, schedule, RecurrencePattern.EVERY_WEEK, Collections.emptyList()))
+									null, schedule, RecurrencePattern.EVERY_WEEK, SlotUnit.HOUR, Collections.emptyList()))
 					.isInstanceOf(NullPointerException.class)
 					.hasMessageContaining("roomId must not be null");
 		}
@@ -140,7 +140,7 @@ class RoomOperatingPolicyTest {
 			assertThatThrownBy(
 					() ->
 							RoomOperatingPolicy.create(
-									roomId, null, RecurrencePattern.EVERY_WEEK, Collections.emptyList()))
+									roomId, null, RecurrencePattern.EVERY_WEEK, SlotUnit.HOUR, Collections.emptyList()))
 					.isInstanceOf(NullPointerException.class)
 					.hasMessageContaining("weeklySchedule must not be null");
 		}
@@ -154,7 +154,7 @@ class RoomOperatingPolicyTest {
 			
 			// When & Then
 			assertThatThrownBy(
-					() -> RoomOperatingPolicy.create(roomId, schedule, null, Collections.emptyList()))
+					() -> RoomOperatingPolicy.create(roomId, schedule, null, SlotUnit.HOUR, Collections.emptyList()))
 					.isInstanceOf(NullPointerException.class)
 					.hasMessageContaining("recurrence must not be null");
 		}
@@ -325,7 +325,7 @@ class RoomOperatingPolicyTest {
 					RoomOperatingPolicy.create(
 							101L,
 							WeeklySlotSchedule.of(slotTimes),
-							RecurrencePattern.EVERY_WEEK,
+							RecurrencePattern.EVERY_WEEK, SlotUnit.HOUR,
 							List.of(lunchBreak));
 			
 			// When
