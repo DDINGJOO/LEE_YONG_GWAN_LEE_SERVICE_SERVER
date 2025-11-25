@@ -418,6 +418,7 @@ public void createReservation(...) {
    - 정확히 한 번 발행: PENDING → PUBLISHED 상태 전이
    - 장애 복구: 재시도 메커니즘 내장
    - 성능: 1초 지연은 예약 프로세스에 허용 가능
+     - **참고**: 실시간성이 중요한 경우 [ADR-004-1: Hybrid Outbox Pattern](004-1-hybrid-outbox-pattern.md) 참조
 
 5. **확장성**
    - 향후 다른 이벤트(SlotConfirmed, SlotCancelled 등)에도 동일 패턴 적용
@@ -510,7 +511,8 @@ outbox:
   - **완화 방안**: 일주일 후 PUBLISHED 메시지 자동 삭제
 
 - **이벤트 발행 지연**: 최대 1초 (스케줄러 주기)
-  - **완화 방안**: 예약 프로세스는 1초 지연 허용 가능
+  - **완화 방안 1**: 예약 프로세스는 1초 지연 허용 가능
+  - **완화 방안 2**: 실시간성이 중요한 경우 [Hybrid Outbox Pattern](004-1-hybrid-outbox-pattern.md) 적용 (즉시 발행 + Outbox 백업)
 
 - **코드 복잡도 증가**: Outbox Entity + Relay 추가
   - **완화 방안**: 공통 컴포넌트로 구현하여 재사용
@@ -643,15 +645,21 @@ void outboxRelay_Performance_ShouldProcess100MessagesInOneSecond() {
 - 기본 Outbox 패턴 구현
 - 단일 테이블, 단순 스케줄러
 
-**Phase 2**:
+**Phase 2 (실시간성 개선)**:
+- **[Hybrid Outbox Pattern](004-1-hybrid-outbox-pattern.md) 도입** (우선순위 높음)
+  - 트랜잭션 커밋 직후 즉시 Kafka 발행 시도
+  - 실패 시에만 Outbox에서 재발행
+  - 발행 지연 1초 → 0ms 개선
+
+**Phase 3 (확장성)**:
 - Outbox 테이블 파티셔닝 (월별)
 - 재시도 전략 고도화 (Exponential Backoff)
 
-**Phase 3**:
+**Phase 4 (고급)**:
 - CDC(Debezium) 도입 검토 (처리량이 크게 증가할 경우)
 - Event Sourcing과 통합
 
-**Phase 4**:
+**Phase 5 (MSA 성숙도)**:
 - Outbox를 별도 서비스로 분리 (Event Publisher Microservice)
 
 ---
