@@ -29,13 +29,16 @@ import java.util.stream.Collectors;
 public class TimeSlotManagementServiceImpl implements TimeSlotManagementService {
 	
 	private static final Logger log = LoggerFactory.getLogger(TimeSlotManagementServiceImpl.class);
-	@Value("${room.timeSlot.pending.expiration.minutes}")
-	private static int PENDING_EXPIRATION_MINUTES;
 
 	private final TimeSlotPort timeSlotPort;
+	private final int pendingExpirationMinutes;
 
-	public TimeSlotManagementServiceImpl(TimeSlotPort timeSlotPort) {
+	public TimeSlotManagementServiceImpl(
+			TimeSlotPort timeSlotPort,
+			@Value("${room.timeSlot.pending.expiration.minutes}") int pendingExpirationMinutes
+	) {
 		this.timeSlotPort = timeSlotPort;
+		this.pendingExpirationMinutes = pendingExpirationMinutes;
 	}
 	
 	@Override
@@ -100,7 +103,7 @@ public class TimeSlotManagementServiceImpl implements TimeSlotManagementService 
 	@Override
 	public int restoreExpiredPendingSlots() {
 		// Port를 통해 만료된 PENDING 슬롯 조회
-		List<RoomTimeSlot> expiredSlots = timeSlotPort.findExpiredPendingSlots(PENDING_EXPIRATION_MINUTES);
+		List<RoomTimeSlot> expiredSlots = timeSlotPort.findExpiredPendingSlots(pendingExpirationMinutes);
 
 		for (RoomTimeSlot slot : expiredSlots) {
 			// PENDING → AVAILABLE 상태로 변경 및 reservationId 제거
