@@ -158,7 +158,7 @@ POST /api/rooms/setup
 | roomId | Long | 룸 ID |
 | startDate | String | 슬롯 생성 시작 날짜 |
 | endDate | String | 슬롯 생성 종료 날짜 |
-| status | String | 요청 상태 (REQUESTED, PROCESSING, COMPLETED, FAILED) |
+| status | String | 요청 상태 (REQUESTED, IN_PROGRESS, COMPLETED, FAILED) |
 | requestedAt | String | 요청 시각 (ISO 8601) |
 
 #### 처리 플로우
@@ -229,7 +229,7 @@ GET /api/rooms/setup/{requestId}/status
 |------|------|------|
 | requestId | String | 슬롯 생성 요청 ID |
 | roomId | Long | 룸 ID |
-| status | String | 요청 상태 (REQUESTED, PROCESSING, COMPLETED, FAILED) |
+| status | String | 요청 상태 (REQUESTED, IN_PROGRESS, COMPLETED, FAILED) |
 | totalSlotsGenerated | Integer | 생성된 슬롯 개수 (COMPLETED 시에만) |
 | startDate | String | 슬롯 생성 시작 날짜 |
 | endDate | String | 슬롯 생성 종료 날짜 |
@@ -537,10 +537,9 @@ curl -X POST http://localhost:8080/api/v1/reservations/multi \
 
 | 상태 | 설명 |
 |------|------|
-| AVAILABLE | 예약 가능 |
-| PENDING | 예약 대기 (40분 후 자동 만료) |
+| AVAILABLE | 예약 가능 (취소 시 이 상태로 복귀) |
+| PENDING | 예약 대기 (40분 후 자동 만료 시 AVAILABLE로 복귀) |
 | RESERVED | 예약 확정 |
-| CANCELLED | 예약 취소 |
 | CLOSED | 휴무일 |
 
 ### B. 반복 패턴 (RecurrencePattern)
@@ -562,7 +561,7 @@ MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
 | 상태 | 설명 |
 |------|------|
 | REQUESTED | 요청됨 |
-| PROCESSING | 처리 중 |
+| IN_PROGRESS | 처리 중 |
 | COMPLETED | 완료 |
 | FAILED | 실패 |
 
