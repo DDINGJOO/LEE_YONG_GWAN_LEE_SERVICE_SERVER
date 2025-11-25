@@ -74,7 +74,7 @@ class TimeSlotGenerationServiceIntegrationTest {
 		policy = RoomOperatingPolicy.create(
 				roomId,
 				schedule,
-				RecurrencePattern.EVERY_WEEK,
+				RecurrencePattern.EVERY_WEEK, SlotUnit.HOUR,
 				List.of()
 		);
 		
@@ -284,7 +284,7 @@ class TimeSlotGenerationServiceIntegrationTest {
 		RoomOperatingPolicy policy2 = RoomOperatingPolicy.create(
 				room2Id,
 				WeeklySlotSchedule.of(room2Times),
-				RecurrencePattern.EVERY_WEEK,
+				RecurrencePattern.EVERY_WEEK, SlotUnit.HOUR,
 				List.of()
 		);
 		policyRepository.save(policy2);

@@ -158,7 +158,6 @@ class TimeSlotGenerationServiceImplTest {
 		LocalDate endDate = LocalDate.of(2025, 1, 22);   // 수요일 (3일)
 		
 		when(operatingPolicyPort.findByRoomId(roomId)).thenReturn(Optional.of(policy));
-		when(placeInfoApiClient.getSlotUnit(roomId)).thenReturn(slotUnit);
 		
 		List<RoomTimeSlot> slotsPerDay = List.of(
 				RoomTimeSlot.available(roomId, startDate, LocalTime.of(9, 0)),
