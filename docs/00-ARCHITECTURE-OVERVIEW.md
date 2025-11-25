@@ -311,6 +311,11 @@ public enum RecurrencePattern {
    - Domain Service 활용 패턴
    - 트랜잭션 원자성 보장
 
+8. **[ADR-008: Payment Completion and Slot Confirmation](adr/008-payment-completion-slot-confirmation.md)**
+   - 결제 완료 이벤트 기반 슬롯 확정
+   - PENDING → RESERVED 상태 전이
+   - 만료 복구 로직 보호 메커니즘
+
 ### 핵심 패턴
 
 #### 1. Factory Pattern (정적 팩토리 메서드)
