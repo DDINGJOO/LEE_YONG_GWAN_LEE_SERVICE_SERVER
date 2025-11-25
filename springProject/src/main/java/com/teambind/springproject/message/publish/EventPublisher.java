@@ -30,8 +30,6 @@ public class EventPublisher {
 	private Object convertToMessage(Event event) {
 		if (event instanceof SlotReservedEvent) {
 			return SlotReservedEventMessage.from((SlotReservedEvent) event);
-		} else if (event instanceof SlotConfirmedEvent) {
-			return SlotConfirmedEventMessage.from((SlotConfirmedEvent) event);
 		} else if (event instanceof SlotCancelledEvent) {
 			return SlotCancelledEventMessage.from((SlotCancelledEvent) event);
 		} else if (event instanceof SlotRestoredEvent) {

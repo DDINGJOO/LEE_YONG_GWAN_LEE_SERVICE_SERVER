@@ -7,7 +7,6 @@ import com.teambind.springproject.room.command.domain.service.TimeSlotManagement
 import com.teambind.springproject.room.entity.RoomTimeSlot;
 import com.teambind.springproject.room.entity.enums.SlotStatus;
 import com.teambind.springproject.room.event.event.SlotCancelledEvent;
-import com.teambind.springproject.room.event.event.SlotConfirmedEvent;
 import com.teambind.springproject.room.event.event.SlotReservedEvent;
 import com.teambind.springproject.room.repository.RoomTimeSlotRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -197,21 +196,7 @@ class TimeSlotManagementServiceIntegrationTest {
 		log.info("[Then] - 실제(Actual): reservationId={}", slot.getReservationId());
 		assertThat(slot.getReservationId()).isEqualTo(reservationId);
 		log.info("[Then] - ✓ 예약 ID가 유지됨");
-		
-		log.info("[Then] [검증3] SlotConfirmedEvent 발행 확인");
-		// 이벤트 검증
-		List<SlotConfirmedEvent> events = eventCollector.getEventsOfType(SlotConfirmedEvent.class);
-		log.info("[Then] - 예상(Expected): SlotConfirmedEvent 1개 발행");
-		log.info("[Then] - 실제(Actual): SlotConfirmedEvent {}개 발행", events.size());
-		assertThat(events).hasSize(1);
-		log.info("[Then] - ✓ 확정 이벤트가 정상 발행됨");
-		
-		log.info("[Then] [검증4] 발행된 이벤트 내용 확인");
-		log.info("[Then] - 예상(Expected): event.reservationId={}", reservationId);
-		log.info("[Then] - 실제(Actual): event.reservationId={}", events.get(0).getReservationId());
-		assertThat(events.get(0).getReservationId()).isEqualTo(reservationId);
-		log.info("[Then] - ✓ 이벤트 내용이 올바름");
-		
+
 		log.info("=== [PENDING 슬롯을 확정하고 이벤트를 발행한다] 테스트 성공 ===");
 	}
 	
@@ -431,15 +416,13 @@ class TimeSlotManagementServiceIntegrationTest {
 		log.info("[When & Then] - ✓ RESERVED → CANCELLED 전이 성공");
 		
 		log.info("[Then] [검증] 발행된 이벤트 개수 확인");
-		// 이벤트 검증: Reserved, Confirmed, Cancelled 이벤트 각 1개씩
+		// 이벤트 검증: Reserved, Cancelled 이벤트 각 1개씩
 		int reservedEventCount = eventCollector.getEventsOfType(SlotReservedEvent.class).size();
-		int confirmedEventCount = eventCollector.getEventsOfType(SlotConfirmedEvent.class).size();
 		int cancelledEventCount = eventCollector.getEventsOfType(SlotCancelledEvent.class).size();
-		log.info("[Then] - 예상(Expected): SlotReservedEvent=1, SlotConfirmedEvent=1, SlotCancelledEvent=1");
-		log.info("[Then] - 실제(Actual): SlotReservedEvent={}, SlotConfirmedEvent={}, SlotCancelledEvent={}",
-				reservedEventCount, confirmedEventCount, cancelledEventCount);
+		log.info("[Then] - 예상(Expected): SlotReservedEvent=1, SlotCancelledEvent=1");
+		log.info("[Then] - 실제(Actual): SlotReservedEvent={}, SlotCancelledEvent={}",
+				reservedEventCount, cancelledEventCount);
 		assertThat(eventCollector.getEventsOfType(SlotReservedEvent.class)).hasSize(1);
-		assertThat(eventCollector.getEventsOfType(SlotConfirmedEvent.class)).hasSize(1);
 		assertThat(eventCollector.getEventsOfType(SlotCancelledEvent.class)).hasSize(1);
 		log.info("[Then] - ✓ 각 상태 전이마다 적절한 이벤트가 발행됨");
 		
