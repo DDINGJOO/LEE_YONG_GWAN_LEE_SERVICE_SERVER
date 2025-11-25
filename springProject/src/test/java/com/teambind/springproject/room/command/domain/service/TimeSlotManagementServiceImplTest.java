@@ -425,4 +425,170 @@ class TimeSlotManagementServiceImplTest {
 
 		log.info("=== [만료 시간 계산 설정값 사용 검증] 테스트 성공 ===");
 	}
+
+	// ========== restoreSlotsAfterRefund() 테스트 (#68) ==========
+
+	@Test
+	@DisplayName("[#68] 환불 완료 시 모든 슬롯이 AVAILABLE 상태로 복구되어야 함")
+	void restoreSlotsAfterRefund_success() {
+		log.info("=== [환불 슬롯 복구 - 정상 케이스] 테스트 시작 ===");
+
+		// Given
+		log.info("[Given] RESERVED 상태의 슬롯 3개 준비");
+		LocalTime time1 = LocalTime.of(10, 0);
+		LocalTime time2 = LocalTime.of(11, 0);
+		LocalTime time3 = LocalTime.of(12, 0);
+		List<LocalTime> slotTimes = List.of(time1, time2, time3);
+
+		RoomTimeSlot slot1 = RoomTimeSlot.available(roomId, slotDate, time1);
+		slot1.markAsPending(reservationId);
+		slot1.confirm();
+
+		RoomTimeSlot slot2 = RoomTimeSlot.available(roomId, slotDate, time2);
+		slot2.markAsPending(reservationId);
+		slot2.confirm();
+
+		RoomTimeSlot slot3 = RoomTimeSlot.available(roomId, slotDate, time3);
+		slot3.markAsPending(reservationId);
+		slot3.confirm();
+
+		List<RoomTimeSlot> reservedSlots = List.of(slot1, slot2, slot3);
+
+		when(timeSlotPort.findByRoomIdAndSlotDateAndSlotTimeInWithLock(roomId, slotDate, slotTimes))
+				.thenReturn(reservedSlots);
+		log.info("[Given] - timeSlotPort.findByRoomIdAndSlotDateAndSlotTimeInWithLock() -> 3개 RESERVED 슬롯 반환");
+
+		// When
+		log.info("[When] restoreSlotsAfterRefund() 호출");
+		service.restoreSlotsAfterRefund(roomId, slotDate, slotTimes);
+
+		// Then
+		log.info("[Then] 결과 검증 시작");
+
+		log.info("[Then] [검증1] 모든 슬롯이 AVAILABLE 상태로 변경되었는지 확인");
+		assertThat(slot1.getStatus()).isEqualTo(SlotStatus.AVAILABLE);
+		assertThat(slot2.getStatus()).isEqualTo(SlotStatus.AVAILABLE);
+		assertThat(slot3.getStatus()).isEqualTo(SlotStatus.AVAILABLE);
+		log.info("[Then] - ✓ 모든 슬롯이 AVAILABLE 상태로 복구됨");
+
+		log.info("[Then] [검증2] saveAll()이 호출되었는지 확인");
+		verify(timeSlotPort).saveAll(reservedSlots);
+		log.info("[Then] - ✓ Port.saveAll() 호출 확인됨");
+
+		log.info("=== [환불 슬롯 복구 - 정상 케이스] 테스트 성공 ===");
+	}
+
+	@Test
+	@DisplayName("[#68] 일부 슬롯이 없으면 SlotNotFoundException 발생")
+	void restoreSlotsAfterRefund_slotNotFound() {
+		log.info("=== [환불 슬롯 복구 - 슬롯 없음] 테스트 시작 ===");
+
+		// Given
+		log.info("[Given] 3개 요청, 2개만 존재하는 상황");
+		LocalTime time1 = LocalTime.of(10, 0);
+		LocalTime time2 = LocalTime.of(11, 0);
+		LocalTime time3 = LocalTime.of(12, 0);
+		List<LocalTime> requestedTimes = List.of(time1, time2, time3);
+
+		RoomTimeSlot slot1 = RoomTimeSlot.available(roomId, slotDate, time1);
+		RoomTimeSlot slot2 = RoomTimeSlot.available(roomId, slotDate, time2);
+		// slot3는 존재하지 않음
+
+		when(timeSlotPort.findByRoomIdAndSlotDateAndSlotTimeInWithLock(roomId, slotDate, requestedTimes))
+				.thenReturn(List.of(slot1, slot2)); // 2개만 반환
+		log.info("[Given] - timeSlotPort -> 2개만 반환 (1개 누락)");
+
+		// When & Then
+		log.info("[When & Then] restoreSlotsAfterRefund() 호출 시 SlotNotFoundException 발생 확인");
+		assertThatThrownBy(() -> service.restoreSlotsAfterRefund(roomId, slotDate, requestedTimes))
+				.isInstanceOf(SlotNotFoundException.class)
+				.hasMessageContaining("일부 슬롯을 찾을 수 없습니다");
+		log.info("[Then] - ✓ SlotNotFoundException 발생 확인됨");
+
+		log.info("[Then] [검증] saveAll()이 호출되지 않았는지 확인");
+		verify(timeSlotPort, never()).saveAll(any());
+		log.info("[Then] - ✓ 원자성 보장: 일부 실패 시 전체 롤백");
+
+		log.info("=== [환불 슬롯 복구 - 슬롯 없음] 테스트 성공 ===");
+	}
+
+	@Test
+	@DisplayName("[#68] 이미 AVAILABLE 상태인 슬롯도 처리되어야 함")
+	void restoreSlotsAfterRefund_alreadyAvailable() {
+		log.info("=== [환불 슬롯 복구 - 이미 AVAILABLE] 테스트 시작 ===");
+
+		// Given
+		log.info("[Given] AVAILABLE 상태의 슬롯 준비");
+		LocalTime time1 = LocalTime.of(10, 0);
+		List<LocalTime> slotTimes = List.of(time1);
+
+		RoomTimeSlot availableSlot = RoomTimeSlot.available(roomId, slotDate, time1);
+		// 이미 AVAILABLE 상태
+
+		when(timeSlotPort.findByRoomIdAndSlotDateAndSlotTimeInWithLock(roomId, slotDate, slotTimes))
+				.thenReturn(List.of(availableSlot));
+		log.info("[Given] - 슬롯 초기 상태: {}", availableSlot.getStatus());
+
+		// When
+		log.info("[When] restoreSlotsAfterRefund() 호출");
+		service.restoreSlotsAfterRefund(roomId, slotDate, slotTimes);
+
+		// Then
+		log.info("[Then] 결과 검증 시작");
+
+		log.info("[Then] [검증1] 슬롯이 AVAILABLE 상태를 유지하는지 확인");
+		assertThat(availableSlot.getStatus()).isEqualTo(SlotStatus.AVAILABLE);
+		log.info("[Then] - ✓ AVAILABLE 상태 유지 확인");
+
+		log.info("[Then] [검증2] saveAll()이 호출되었는지 확인");
+		verify(timeSlotPort).saveAll(List.of(availableSlot));
+		log.info("[Then] - ✓ Port.saveAll() 호출 확인됨 (멱등성)");
+
+		log.info("=== [환불 슬롯 복구 - 이미 AVAILABLE] 테스트 성공 ===");
+	}
+
+	@Test
+	@DisplayName("[#68] TimeSlotPort의 Lock 메서드가 호출되어야 함")
+	void restoreSlotsAfterRefund_callsPortWithLock() {
+		log.info("=== [환불 슬롯 복구 - Port Lock 메서드 호출 검증] 테스트 시작 ===");
+
+		// Given
+		log.info("[Given] RESERVED 슬롯 준비");
+		LocalTime time1 = LocalTime.of(10, 0);
+		List<LocalTime> slotTimes = List.of(time1);
+
+		RoomTimeSlot slot = RoomTimeSlot.available(roomId, slotDate, time1);
+		slot.markAsPending(reservationId);
+		slot.confirm();
+
+		when(timeSlotPort.findByRoomIdAndSlotDateAndSlotTimeInWithLock(roomId, slotDate, slotTimes))
+				.thenReturn(List.of(slot));
+
+		// When
+		log.info("[When] restoreSlotsAfterRefund() 호출");
+		service.restoreSlotsAfterRefund(roomId, slotDate, slotTimes);
+
+		// Then
+		log.info("[Then] Pessimistic Lock 메서드 호출 검증");
+		ArgumentCaptor<Long> roomIdCaptor = ArgumentCaptor.forClass(Long.class);
+		ArgumentCaptor<LocalDate> dateCaptor = ArgumentCaptor.forClass(LocalDate.class);
+		ArgumentCaptor<List> timesCaptor = ArgumentCaptor.forClass(List.class);
+
+		verify(timeSlotPort).findByRoomIdAndSlotDateAndSlotTimeInWithLock(
+				roomIdCaptor.capture(),
+				dateCaptor.capture(),
+				timesCaptor.capture()
+		);
+
+		log.info("[Then] - 예상 roomId: {}, 실제: {}", roomId, roomIdCaptor.getValue());
+		log.info("[Then] - 예상 slotDate: {}, 실제: {}", slotDate, dateCaptor.getValue());
+		log.info("[Then] - 예상 slotTimes: {}, 실제: {}", slotTimes, timesCaptor.getValue());
+
+		assertThat(roomIdCaptor.getValue()).isEqualTo(roomId);
+		assertThat(dateCaptor.getValue()).isEqualTo(slotDate);
+		assertThat(timesCaptor.getValue()).isEqualTo(slotTimes);
+		log.info("[Then] - ✓ Pessimistic Lock 메서드가 정확한 파라미터로 호출됨");
+
+		log.info("=== [환불 슬롯 복구 - Port Lock 메서드 호출 검증] 테스트 성공 ===");
+	}
 }
