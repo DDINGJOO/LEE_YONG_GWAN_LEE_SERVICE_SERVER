@@ -1,6 +1,8 @@
 package com.teambind.springproject.message.outbox.entity;
 
+import com.teambind.springproject.common.event.DomainEventPublisher;
 import com.teambind.springproject.message.outbox.enums.OutboxStatus;
+import com.teambind.springproject.message.outbox.event.OutboxSavedEvent;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -130,6 +132,24 @@ public class OutboxMessage {
 			String payload
 	) {
 		return new OutboxMessage(aggregateType, aggregateId, topic, eventType, payload);
+	}
+
+	/**
+	 * Outbox 메시지가 DB에 저장된 직후 OutboxSavedEvent를 발행합니다.
+	 * <p>
+	 * Hybrid Outbox Pattern의 핵심 메커니즘:
+	 * 1. DB 트랜잭션 커밋
+	 * 2. @PostPersist 콜백 실행 (이 메서드)
+	 * 3. OutboxSavedEvent 발행
+	 * 4. @TransactionalEventListener(AFTER_COMMIT)가 이벤트 수신
+	 * 5. ImmediatePublisher가 즉시 Kafka 발행 시도
+	 * 6. 실패 시 Scheduler가 5초 내 재시도
+	 */
+	@PostPersist
+	private void publishSavedEvent() {
+		DomainEventPublisher.publish(
+				new OutboxSavedEvent(this.id, this.topic, this.aggregateId, this.payload)
+		);
 	}
 
 	/**
