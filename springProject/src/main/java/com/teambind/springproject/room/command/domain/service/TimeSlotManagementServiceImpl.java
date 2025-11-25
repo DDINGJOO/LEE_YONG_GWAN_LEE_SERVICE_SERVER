@@ -181,6 +181,57 @@ public class TimeSlotManagementServiceImpl implements TimeSlotManagementService 
 		return slots.size();
 	}
 
+	@Override
+	public void restoreSlotsAfterRefund(
+			Long roomId,
+			LocalDate slotDate,
+			List<LocalTime> slotTimes
+	) {
+		log.info("Attempting to restore slots after refund: roomId={}, slotDate={}, slotTimes={}",
+				roomId, slotDate, slotTimes);
+
+		// 1. Pessimistic Lock을 사용하여 슬롯 조회 (SELECT ... FOR UPDATE)
+		List<RoomTimeSlot> slots = timeSlotPort.findByRoomIdAndSlotDateAndSlotTimeInWithLock(
+				roomId, slotDate, slotTimes
+		);
+
+		// 2. 요청한 슬롯 수와 조회된 슬롯 수 확인 (원자적 처리)
+		if (slots.size() != slotTimes.size()) {
+			List<LocalTime> foundTimes = slots.stream()
+					.map(RoomTimeSlot::getSlotTime)
+					.collect(Collectors.toList());
+			List<LocalTime> missingTimes = slotTimes.stream()
+					.filter(time -> !foundTimes.contains(time))
+					.collect(Collectors.toList());
+
+			log.error("Some slots not found for refund restoration: roomId={}, slotDate={}, missingTimes={}",
+					roomId, slotDate, missingTimes);
+			throw new SlotNotFoundException(
+					roomId,
+					slotDate.toString(),
+					String.format("일부 슬롯을 찾을 수 없습니다. missingTimes=%s", missingTimes)
+			);
+		}
+
+		// 3. 도메인 규칙 검증 및 상태 전이
+		for (RoomTimeSlot slot : slots) {
+			// 예약되지 않은 슬롯에 대한 복구 시도 시 경고 로그
+			if (slot.getStatus() != SlotStatus.RESERVED && slot.getStatus() != SlotStatus.PENDING) {
+				log.warn("Restoring non-reserved slot: slotId={}, roomId={}, status={}, slotTime={}",
+						slot.getSlotId(), roomId, slot.getStatus(), slot.getSlotTime());
+			}
+
+			// RESERVED/PENDING → AVAILABLE 상태 전이
+			slot.markAsAvailable();
+		}
+
+		// 4. 일괄 저장
+		timeSlotPort.saveAll(slots);
+
+		log.info("Successfully restored {} slots after refund: roomId={}, slotDate={}",
+				slots.size(), roomId, slotDate);
+	}
+
 	/**
 	 * 슬롯을 조회한다. 없으면 예외를 던진다.
 	 */

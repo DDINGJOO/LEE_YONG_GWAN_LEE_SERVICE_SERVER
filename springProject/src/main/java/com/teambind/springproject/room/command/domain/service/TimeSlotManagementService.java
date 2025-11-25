@@ -92,4 +92,30 @@ public interface TimeSlotManagementService {
 			java.util.List<java.time.LocalTime> slotTimes,
 			Long reservationId
 	);
+
+	/**
+	 * 환불 완료 시 여러 슬롯을 AVAILABLE 상태로 복구한다.
+	 *
+	 * 동시성 제어:
+	 * - Pessimistic Lock (SELECT ... FOR UPDATE) 사용
+	 * - 트랜잭션 내에서 모든 슬롯을 잠그고 원자적 처리
+	 * - 하나라도 존재하지 않으면 전체 롤백
+	 *
+	 * 처리 플로우:
+	 * 1. Pessimistic Lock으로 슬롯 조회
+	 * 2. 모든 슬롯 존재 여부 검증
+	 * 3. 도메인 규칙 검증 (RESERVED 상태 확인)
+	 * 4. RESERVED/PENDING → AVAILABLE 상태 전이
+	 * 5. 일괄 저장
+	 *
+	 * @param roomId    룸 ID
+	 * @param slotDate  슬롯 날짜
+	 * @param slotTimes 복구할 슬롯 시간 리스트
+	 * @throws com.teambind.springproject.common.exceptions.domain.SlotNotFoundException 슬롯이 존재하지 않는 경우
+	 */
+	void restoreSlotsAfterRefund(
+			Long roomId,
+			java.time.LocalDate slotDate,
+			java.util.List<java.time.LocalTime> slotTimes
+	);
 }
