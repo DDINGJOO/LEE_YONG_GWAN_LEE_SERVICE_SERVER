@@ -1,31 +1,39 @@
 package com.teambind.springproject.config;
 
+import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
+import net.javacrumbs.shedlock.core.SimpleLock;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
+import java.util.Optional;
 
 /**
  * 테스트용 ShedLock 설정.
  *
- * Redis 대신 H2 인메모리 DB를 사용하여 ShedLock을 구현한다.
- * 테스트 환경에서 Redis 의존성을 제거하고 안정적인 테스트 실행을 보장한다.
+ * 테스트 환경에서는 실제 분산 락이 필요없으므로 NoOp 구현을 제공한다.
+ * 모든 락 요청에 대해 항상 성공을 반환하여 테스트가 정상적으로 실행되도록 한다.
  */
 @TestConfiguration
 public class TestShedLockConfig {
 
     @Bean
     @Primary
-    public LockProvider lockProvider(DataSource dataSource) {
-        // H2 인메모리 DB를 사용한 LockProvider
-        // 테스트 시작 시 자동으로 테이블 생성
-        return new JdbcTemplateLockProvider(JdbcTemplateLockProvider.Configuration.builder()
-                .withJdbcTemplate(new JdbcTemplate(dataSource))
-                .usingDbTime() // DB 시간 사용
-                .build());
+    public LockProvider lockProvider() {
+        // 테스트용 NoOp LockProvider
+        // 모든 락 요청에 대해 항상 성공을 반환
+        return new LockProvider() {
+            @Override
+            public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
+                // 항상 락 획득에 성공하는 SimpleLock 반환
+                return Optional.of(new SimpleLock() {
+                    @Override
+                    public void unlock() {
+                        // NoOp - 테스트에서는 실제 언락 동작 불필요
+                    }
+                });
+            }
+        };
     }
 }

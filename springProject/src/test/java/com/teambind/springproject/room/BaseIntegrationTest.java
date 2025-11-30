@@ -25,9 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
         "room.timeSlot.pending.expiration.minutes=30",
-        "room.timeSlot.rollingWindow.days=30",
-        "spring.sql.init.mode=always",
-        "spring.sql.init.schema-locations=classpath:schema.sql"
+        "room.timeSlot.rollingWindow.days=30"
 })
 @Import({TestRedisConfig.class, TestKafkaConfig.class, TestShedLockConfig.class})
 @Transactional
