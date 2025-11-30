@@ -1,5 +1,5 @@
 spring:
-  # 빈 오버라이드 허용
+  # 빈 오버라이드 허용 (테스트에서 Mock LockProvider 사용)
   main:
     allow-bean-definition-overriding: true
 

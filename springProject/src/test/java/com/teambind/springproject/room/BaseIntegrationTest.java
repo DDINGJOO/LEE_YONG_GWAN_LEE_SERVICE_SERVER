@@ -23,6 +23,9 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @SpringBootTest
 @ActiveProfiles("test")
+@TestPropertySource(properties = {
+        "spring.main.allow-bean-definition-overriding=true"
+})
 @Import({TestRedisConfig.class, TestKafkaConfig.class, TestShedLockConfig.class})
 @Transactional
 public abstract class BaseIntegrationTest {
