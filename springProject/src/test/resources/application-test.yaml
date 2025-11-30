@@ -43,11 +43,6 @@ spring:
       repositories:
         enabled: false
 
-  # SQL 초기화 설정 (ShedLock 테이블 생성)
-  sql:
-    init:
-      mode: always
-      schema-locations: classpath:schema.sql
 
 # 서버 설정
 server:
