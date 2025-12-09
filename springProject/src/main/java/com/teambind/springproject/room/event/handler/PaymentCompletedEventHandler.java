@@ -21,25 +21,25 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @RequiredArgsConstructor
 public class PaymentCompletedEventHandler implements EventHandler<PaymentCompletedEvent> {
-
+	
 	private final TimeSlotManagementService timeSlotManagementService;
-
+	
 	@Override
 	@Transactional
 	public void handle(PaymentCompletedEvent event) {
 		log.info("Processing PaymentCompletedEvent: paymentId={}, reservationId={}, orderId={}, amount={}",
 				event.getPaymentId(), event.getReservationId(), event.getOrderId(), event.getAmount());
-
+		
 		try {
 			// String → Long 변환
 			Long reservationId = Long.parseLong(event.getReservationId());
-
+			
 			// Domain Service를 통한 슬롯 확정 (트랜잭션 원자성 보장)
 			timeSlotManagementService.confirmSlotsByReservationId(reservationId);
-
+			
 			log.info("PaymentCompletedEvent processed successfully: paymentId={}, reservationId={}, amount={}",
 					event.getPaymentId(), reservationId, event.getAmount());
-
+			
 		} catch (NumberFormatException e) {
 			log.error("Invalid reservationId format: reservationId={}", event.getReservationId(), e);
 			throw new IllegalArgumentException("Invalid reservationId format: " + event.getReservationId(), e);
@@ -49,7 +49,7 @@ public class PaymentCompletedEventHandler implements EventHandler<PaymentComplet
 			throw e; // Re-throw for transaction rollback
 		}
 	}
-
+	
 	@Override
 	public String getSupportedEventType() {
 		return "PaymentCompleted";
