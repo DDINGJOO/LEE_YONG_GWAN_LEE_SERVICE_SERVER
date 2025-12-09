@@ -18,7 +18,7 @@ import static org.mockito.Mockito.mock;
  */
 @TestConfiguration
 public class TestKafkaConfig {
-
+	
 	@Bean
 	@Primary
 	public KafkaTemplate<String, Object> kafkaTemplate() {
@@ -29,7 +29,7 @@ public class TestKafkaConfig {
 	public KafkaTemplate<String, String> stringKafkaTemplate() {
 		return mock(KafkaTemplate.class);
 	}
-
+	
 	@Bean
 	@Primary
 	public JsonUtil jsonUtil() {
