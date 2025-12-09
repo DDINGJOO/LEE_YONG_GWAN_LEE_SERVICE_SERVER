@@ -13,7 +13,7 @@ import java.util.List;
  * Outbox 메시지 영속성 Repository.
  */
 public interface OutboxMessageRepository extends JpaRepository<OutboxMessage, Long> {
-
+	
 	/**
 	 * PENDING 상태의 메시지를 생성 시각 순으로 조회합니다.
 	 * <p>
@@ -23,7 +23,7 @@ public interface OutboxMessageRepository extends JpaRepository<OutboxMessage, Lo
 	 */
 	@Query("SELECT o FROM OutboxMessage o WHERE o.status = 'PENDING' ORDER BY o.createdAt ASC")
 	List<OutboxMessage> findPendingMessages();
-
+	
 	/**
 	 * PENDING 상태이면서 재시도 횟수 제한 내의 메시지를 조회합니다.
 	 *
@@ -32,7 +32,7 @@ public interface OutboxMessageRepository extends JpaRepository<OutboxMessage, Lo
 	 */
 	@Query("SELECT o FROM OutboxMessage o WHERE o.status = 'PENDING' AND o.retryCount < :maxRetries ORDER BY o.createdAt ASC")
 	List<OutboxMessage> findRetryableMessages(@Param("maxRetries") int maxRetries);
-
+	
 	/**
 	 * 특정 시각 이전에 발행 완료된 메시지를 조회합니다.
 	 * <p>
@@ -43,7 +43,7 @@ public interface OutboxMessageRepository extends JpaRepository<OutboxMessage, Lo
 	 */
 	@Query("SELECT o FROM OutboxMessage o WHERE o.status = 'PUBLISHED' AND o.publishedAt < :beforeDate")
 	List<OutboxMessage> findPublishedBefore(@Param("beforeDate") LocalDateTime beforeDate);
-
+	
 	/**
 	 * 특정 Aggregate의 메시지를 조회합니다.
 	 * <p>
@@ -57,7 +57,7 @@ public interface OutboxMessageRepository extends JpaRepository<OutboxMessage, Lo
 			String aggregateType,
 			String aggregateId
 	);
-
+	
 	/**
 	 * 특정 상태의 메시지 개수를 조회합니다.
 	 * <p>
