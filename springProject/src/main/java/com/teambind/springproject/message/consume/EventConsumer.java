@@ -23,9 +23,9 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class EventConsumer {
-
+	
 	private static final Map<String, Class<?>> MESSAGE_TYPE_MAP = new HashMap<>();
-
+	
 	static {
 		MESSAGE_TYPE_MAP.put("SlotReserved", SlotReservedEventMessage.class);
 		MESSAGE_TYPE_MAP.put("SlotCancelled", SlotCancelledEventMessage.class);
@@ -35,10 +35,10 @@ public class EventConsumer {
 		MESSAGE_TYPE_MAP.put("SlotGenerationRequested", SlotGenerationRequestedEventMessage.class);
 		MESSAGE_TYPE_MAP.put("ClosedDateUpdateRequested", ClosedDateUpdateRequestedEventMessage.class);
 	}
-
+	
 	private final List<EventHandler<? extends Event>> eventHandlers;
 	private final ObjectMapper objectMapper;
-
+	
 	/**
 	 * Kafka에서 이벤트를 수신하여 처리한다.
 	 *
@@ -53,40 +53,40 @@ public class EventConsumer {
 			// 1. JSON에서 eventType 추출
 			JsonNode jsonNode = objectMapper.readTree(message);
 			String eventType = jsonNode.get("eventType").asText();
-
+			
 			log.info("Received event: type={}", eventType);
-
+			
 			// 2. eventType에 해당하는 Message DTO 클래스 찾기
 			Class<?> messageClass = MESSAGE_TYPE_MAP.get(eventType);
 			if (messageClass == null) {
 				log.error("Unknown event type: {}", eventType);
 				return;
 			}
-
+			
 			// 3. JSON을 Message DTO로 역직렬화 (ID: String)
 			Object messageDto = objectMapper.readValue(message, messageClass);
-
+			
 			// 4. Message DTO를 Event로 변환 (ID: String → Long)
 			Event event = convertToEvent(messageDto);
-
+			
 			// 5. 해당 이벤트를 처리할 핸들러 찾기 (변환된 이벤트 타입 기준)
 			EventHandler handler = findHandler(event.getEventTypeName());
 			if (handler == null) {
 				log.warn("No handler found for event type: {}", eventType);
 				return;
 			}
-
+			
 			// 6. 핸들러로 이벤트 처리 위임
 			handler.handle(event);
-
+			
 			log.info("Event processed successfully: type={}", eventType);
-
+			
 		} catch (Exception e) {
 			log.error("Failed to process event: {}", message, e);
 			// TODO: 에러 처리 전략 (DLQ 전송, 재시도 등)
 		}
 	}
-
+	
 	/**
 	 * Message DTO를 Event로 변환한다.
 	 * 모든 ID 필드가 String → Long으로 변환된다.
@@ -107,10 +107,10 @@ public class EventConsumer {
 		} else if (messageDto instanceof ClosedDateUpdateRequestedEventMessage) {
 			return ((ClosedDateUpdateRequestedEventMessage) messageDto).toEvent();
 		}
-
+		
 		throw new IllegalArgumentException("Unknown message type: " + messageDto.getClass().getName());
 	}
-
+	
 	/**
 	 * 이벤트 타입에 맞는 핸들러를 찾는다.
 	 *
