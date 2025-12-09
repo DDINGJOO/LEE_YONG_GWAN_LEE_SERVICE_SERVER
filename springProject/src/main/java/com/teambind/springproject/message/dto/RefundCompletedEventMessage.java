@@ -15,12 +15,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class RefundCompletedEventMessage {
-
+	
 	private String topic;
 	private String eventType;
 	private String reservationId;
 	private String occurredAt;
-
+	
 	/**
 	 * 메시지 DTO를 SlotRestoredEvent로 변환한다.
 	 * 환불 완료 시 해당 예약의 슬롯을 복구한다.
