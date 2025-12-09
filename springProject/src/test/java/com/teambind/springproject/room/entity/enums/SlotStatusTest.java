@@ -32,7 +32,7 @@ class SlotStatusTest {
 		void allStatusesExist() {
 			// When
 			SlotStatus[] statuses = SlotStatus.values();
-
+			
 			// Then
 			assertThat(statuses)
 					.hasSize(4)
