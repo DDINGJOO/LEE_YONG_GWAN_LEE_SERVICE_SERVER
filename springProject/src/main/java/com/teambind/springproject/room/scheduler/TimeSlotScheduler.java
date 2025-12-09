@@ -31,15 +31,15 @@ import java.time.LocalDate;
  */
 @Component
 public class TimeSlotScheduler {
-
+	
 	private static final Logger log = LoggerFactory.getLogger(TimeSlotScheduler.class);
-
+	
 	private final TimeSlotGenerationService generationService;
 	private final TimeSlotManagementService managementService;
-
+	
 	@Value("${room.timeSlot.rollingWindow.days}")
 	private int rollingWindowDays;
-
+	
 	public TimeSlotScheduler(
 			TimeSlotGenerationService generationService, TimeSlotManagementService managementService) {
 		this.generationService = generationService;
@@ -63,17 +63,17 @@ public class TimeSlotScheduler {
 			lockAtLeastFor = "PT1M") // 최소 1분 간격
 	public void maintainRollingWindow() {
 		log.info("Starting rolling window maintenance (rollingWindowDays={})", rollingWindowDays);
-
+		
 		try {
 			// 1. 어제 슬롯 삭제
 			int deletedCount = generationService.deleteYesterdaySlots();
 			log.info("Deleted yesterday's slots: count={}", deletedCount);
-
+			
 			// 2. 설정된 일수 후 슬롯 생성
 			LocalDate targetDate = LocalDate.now().plusDays(rollingWindowDays);
 			int createdCount = generationService.generateSlotsForAllRooms(targetDate);
 			log.info("Created slots for date {}: count={}", targetDate, createdCount);
-
+			
 			log.info("Rolling window maintenance completed: deleted={}, created={}",
 					deletedCount, createdCount);
 		} catch (Exception e) {
@@ -84,12 +84,12 @@ public class TimeSlotScheduler {
 	
 	/**
 	 * 5분마다 만료된 PENDING 슬롯을 복구한다.
-	 *
+	 * <p>
 	 * 20분 이상 PENDING 상태인 슬롯을 AVAILABLE로 복구한다.
-	 *
+	 * <p>
 	 * Lock 설정:
-	 *
-	 *
+	 * <p>
+	 * <p>
 	 * lockAtMostFor: 2분 (작업이 2분 이상 걸리면 자동 해제)
 	 * lockAtLeastFor: 30초 (최소 30초 간격 유지)
 	 *
