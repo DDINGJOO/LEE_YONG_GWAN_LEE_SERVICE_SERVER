@@ -559,7 +559,7 @@ class TimeSlotGenerationServiceIntegrationTest extends BaseIntegrationTest {
 	@DisplayName("중복 생성을 시도하면 기존 슬롯을 유지한다")
 	void generateDuplicateSlots_MaintainsUniqueness() {
 		log.info("=== [중복 생성을 시도하면 기존 슬롯을 유지한다] 테스트 시작 ===");
-
+		
 		// Given
 		log.info("[Given] 테스트 데이터 준비");
 		LocalDate wednesday = LocalDate.of(2025, 11, 5);
@@ -567,25 +567,25 @@ class TimeSlotGenerationServiceIntegrationTest extends BaseIntegrationTest {
 		log.info("[Given] - 생성 날짜: {} (수요일)", wednesday);
 		log.info("[Given] - 운영 정책: 수요일 9시~12시 (4개 슬롯)");
 		log.info("[Given] - 테스트 목적: 동일한 날짜에 대해 슬롯을 2번 생성하여 중복 저장 방지 확인");
-
+		
 		// When - 1차 생성
 		log.info("[When] 중복 슬롯 생성 테스트");
 		log.info("[When] - [1차 생성] generationService.generateSlotsForDate() 호출");
 		log.info("[When]   - 파라미터: roomId={}, date={}", roomId, wednesday);
 		int firstCount = generationService.generateSlotsForDate(roomId, wednesday);
 		log.info("[When]   - 1차 생성 완료: {} 개의 슬롯 생성됨", firstCount);
-
+		
 		// 1차 생성 후 DB 조회
 		log.info("[When] - 1차 생성 후 DB 상태 확인");
 		List<RoomTimeSlot> slotsAfterFirst = slotRepository.findByRoomIdAndSlotDateBetween(
 				roomId, wednesday, wednesday
 		);
 		log.info("[When]   - 1차 생성 후 DB 슬롯 개수: {}", slotsAfterFirst.size());
-
+		
 		// When - 2차 생성 시도
 		log.info("[When] - [2차 생성 시도] generationService.generateSlotsForDate() 호출 (중복 생성 시도)");
 		log.info("[When]   - 파라미터: roomId={}, date={}", roomId, wednesday);
-
+		
 		// 2차 생성 시도는 중복으로 인해 0개가 생성되거나 예외가 발생할 수 있음
 		// 하지만 이미 생성된 슬롯은 유지되어야 함
 		int secondCount = 0;
@@ -601,20 +601,20 @@ class TimeSlotGenerationServiceIntegrationTest extends BaseIntegrationTest {
 			exceptionOccurred = true;
 			// 예외가 발생해도 괜찮음 (중복 방지로 인한 예외)
 		}
-
+		
 		// Then - 최종 상태 확인 (새로운 트랜잭션에서 조회)
 		log.info("[Then] 결과 검증 시작");
-
+		
 		// 여기서는 직접 조회하지 않고, 1차 생성 후 조회한 결과를 사용
 		// 또는 예외 발생 여부와 1차 생성 개수만으로 검증
 		log.info("[Then] [검증1] 슬롯 생성 결과");
 		log.info("[Then] - 1차 생성: {} 개", firstCount);
 		log.info("[Then] - 2차 생성 시도: {} 개 (예외 발생: {})", secondCount, exceptionOccurred);
-
+		
 		// 1차 생성은 반드시 4개여야 함
 		assertThat(firstCount).isEqualTo(4);
 		log.info("[Then] - ✓ 1차 생성에서 정확히 4개 슬롯 생성됨");
-
+		
 		// 2차 생성 시도는 0개이거나 예외가 발생해야 함
 		if (!exceptionOccurred) {
 			assertThat(secondCount).isEqualTo(0);
@@ -622,12 +622,12 @@ class TimeSlotGenerationServiceIntegrationTest extends BaseIntegrationTest {
 		} else {
 			log.info("[Then] - ✓ 2차 생성 시도에서 예외 발생 (중복 방지 성공)");
 		}
-
+		
 		log.info("[Then] [검증2] 1차 생성 후 DB 상태");
 		log.info("[Then] - 1차 생성 직후 DB 슬롯 개수: {}", slotsAfterFirst.size());
 		assertThat(slotsAfterFirst).hasSize(4);
 		log.info("[Then] - ✓ DB에 정확히 4개 슬롯 저장됨");
-
+		
 		log.info("[Then] [검증3] 슬롯 상태 확인");
 		if (!slotsAfterFirst.isEmpty()) {
 			long availableCount = slotsAfterFirst.stream().filter(RoomTimeSlot::isAvailable).count();
@@ -635,7 +635,7 @@ class TimeSlotGenerationServiceIntegrationTest extends BaseIntegrationTest {
 			assertThat(slotsAfterFirst).allMatch(RoomTimeSlot::isAvailable);
 			log.info("[Then] - ✓ 모든 슬롯이 AVAILABLE 상태");
 		}
-
+		
 		log.info("=== [중복 생성을 시도하면 기존 슬롯을 유지한다] 테스트 성공 ===");
 	}
 }
