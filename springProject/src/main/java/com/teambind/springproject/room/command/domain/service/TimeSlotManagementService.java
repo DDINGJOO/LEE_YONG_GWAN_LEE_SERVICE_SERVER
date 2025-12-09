@@ -63,7 +63,7 @@ public interface TimeSlotManagementService {
 	 * @param reservationId 예약 ID
 	 */
 	void confirmSlotsByReservationId(Long reservationId);
-
+	
 	/**
 	 * 예약 ID로 연관된 모든 슬롯을 취소한다.
 	 *
@@ -79,10 +79,10 @@ public interface TimeSlotManagementService {
 	 * @return 복구된 슬롯 개수
 	 */
 	int restoreExpiredPendingSlots();
-
+	
 	/**
 	 * 여러 슬롯을 한 번에 예약 대기 상태(PENDING)로 변경한다.
-	 *
+	 * <p>
 	 * 동시성 제어:
 	 * - Pessimistic Lock (SELECT ... FOR UPDATE) 사용
 	 * - 트랜잭션 내에서 모든 슬롯을 잠그고 상태 검증
@@ -101,15 +101,15 @@ public interface TimeSlotManagementService {
 			java.util.List<java.time.LocalTime> slotTimes,
 			Long reservationId
 	);
-
+	
 	/**
 	 * 환불 완료 시 여러 슬롯을 AVAILABLE 상태로 복구한다.
-	 *
+	 * <p>
 	 * 동시성 제어:
 	 * - Pessimistic Lock (SELECT ... FOR UPDATE) 사용
 	 * - 트랜잭션 내에서 모든 슬롯을 잠그고 원자적 처리
 	 * - 하나라도 존재하지 않으면 전체 롤백
-	 *
+	 * <p>
 	 * 처리 플로우:
 	 * 1. Pessimistic Lock으로 슬롯 조회
 	 * 2. 모든 슬롯 존재 여부 검증
@@ -127,7 +127,7 @@ public interface TimeSlotManagementService {
 			java.time.LocalDate slotDate,
 			java.util.List<java.time.LocalTime> slotTimes
 	);
-
+	
 	/**
 	 * 운영 정책의 휴무일 설정에 따라 슬롯을 CLOSED 상태로 업데이트한다.
 	 * <p>
