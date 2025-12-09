@@ -47,11 +47,11 @@ public class RoomOperatingPolicy {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private RecurrencePattern recurrence;
-
+	
 	@Enumerated(EnumType.STRING)
 	@Column(name = "slot_unit", nullable = false)
 	private SlotUnit slotUnit;
-
+	
 	@ElementCollection
 	@CollectionTable(name = "policy_closed_dates", joinColumns = @JoinColumn(name = "policy_id"))
 	private List<ClosedDateRange> closedDates = new ArrayList<>();
@@ -81,7 +81,7 @@ public class RoomOperatingPolicy {
 		this.createdAt = LocalDateTime.now();
 		this.updatedAt = LocalDateTime.now();
 	}
-
+	
 	/**
 	 * RoomOperatingPolicy 인스턴스를 생성한다.
 	 *
@@ -103,10 +103,10 @@ public class RoomOperatingPolicy {
 	
 	/**
 	 * 특정 날짜에 슬롯을 생성해야 하는지 판단한다.
-	 *
+	 * <p>
 	 * 다음 조건을 모두 만족해야 슬롯을 생성한다:
-	 *
-	 *
+	 * <p>
+	 * <p>
 	 * 반복 패턴과 일치
 	 * 휴무일이 아님
 	 *
@@ -267,11 +267,11 @@ public class RoomOperatingPolicy {
 	public RecurrencePattern getRecurrence() {
 		return recurrence;
 	}
-
+	
 	public SlotUnit getSlotUnit() {
 		return slotUnit;
 	}
-
+	
 	public List<ClosedDateRange> getClosedDates() {
 		return Collections.unmodifiableList(closedDates);
 	}
