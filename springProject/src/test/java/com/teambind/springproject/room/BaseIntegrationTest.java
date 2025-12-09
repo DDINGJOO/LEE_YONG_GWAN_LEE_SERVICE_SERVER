@@ -11,10 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Room 모듈 통합 테스트 기본 설정.
- *
+ * <p>
  * 모든 Room 모듈 통합 테스트가 상속받는 베이스 클래스.
  * 공통 테스트 설정을 중앙화하여 관리한다.
- *
+ * <p>
  * 제공되는 기능:
  * - H2 인메모리 데이터베이스
  * - Mock Kafka/Redis 설정
@@ -24,10 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
-        "spring.main.allow-bean-definition-overriding=true"
+		"spring.main.allow-bean-definition-overriding=true"
 })
 @Import({TestRedisConfig.class, TestKafkaConfig.class, TestShedLockConfig.class})
 @Transactional
 public abstract class BaseIntegrationTest {
-    // 공통 유틸리티 메서드나 설정을 여기에 추가할 수 있음
+	// 공통 유틸리티 메서드나 설정을 여기에 추가할 수 있음
 }
