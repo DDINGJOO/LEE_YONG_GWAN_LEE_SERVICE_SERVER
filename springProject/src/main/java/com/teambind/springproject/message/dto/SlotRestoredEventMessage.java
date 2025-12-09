@@ -17,13 +17,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class SlotRestoredEventMessage {
-
+	
 	private String topic;
 	private String eventType;
 	private String reservationId;
 	private String restoreReason;
 	private LocalDateTime occurredAt;
-
+	
 	/**
 	 * SlotRestoredEvent로부터 메시지 DTO를 생성한다.
 	 */
@@ -36,7 +36,7 @@ public class SlotRestoredEventMessage {
 				event.getOccurredAt()
 		);
 	}
-
+	
 	/**
 	 * 메시지 DTO를 SlotRestoredEvent로 변환한다.
 	 */
