@@ -13,7 +13,7 @@ public enum OutboxStatus {
 	 * Scheduler 또는 ImmediatePublisher가 이 상태의 메시지를 발행합니다.
 	 */
 	PENDING,
-
+	
 	/**
 	 * 발행 완료.
 	 * <p>
@@ -21,7 +21,7 @@ public enum OutboxStatus {
 	 * 일정 기간 후 삭제 대상이 됩니다.
 	 */
 	PUBLISHED,
-
+	
 	/**
 	 * 발행 실패.
 	 * <p>
