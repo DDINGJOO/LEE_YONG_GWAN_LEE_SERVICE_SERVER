@@ -32,10 +32,10 @@ public class TimeSlotGenerationServiceImpl implements TimeSlotGenerationService 
 	
 	private final TimeSlotPort timeSlotPort;
 	private final OperatingPolicyPort operatingPolicyPort;
-
+	
 	@Value("${room.timeSlot.rollingWindow.days:30}")
 	private int rollingWindowDays;
-
+	
 	public TimeSlotGenerationServiceImpl(
 			TimeSlotPort timeSlotPort,
 			OperatingPolicyPort operatingPolicyPort
@@ -53,13 +53,13 @@ public class TimeSlotGenerationServiceImpl implements TimeSlotGenerationService 
 			RoomOperatingPolicy policy = operatingPolicyPort
 					.findByRoomId(roomId)
 					.orElseThrow(() -> new PolicyNotFoundException(roomId, true));
-
+			
 			// 2. 정책에 저장된 SlotUnit 사용
 			SlotUnit slotUnit = policy.getSlotUnit();
-
+			
 			// 3. 정책 기반 슬롯 생성
 			List<RoomTimeSlot> slots = policy.generateSlotsFor(date, slotUnit);
-
+			
 			// 4. DB 저장 (배치 처리 - Port 사용)
 			List<RoomTimeSlot> savedSlots = timeSlotPort.saveAll(slots);
 			
@@ -136,19 +136,19 @@ public class TimeSlotGenerationServiceImpl implements TimeSlotGenerationService 
 		try {
 			// 1. 미래 슬롯 삭제 (Port 사용)
 			timeSlotPort.deleteByRoomId(roomId);
-
+			
 			log.info("Deleted future slots for roomId={}", roomId);
-
+			
 			// 2. N일치 슬롯 재생성 (설정값 사용)
 			LocalDate today = LocalDate.now();
 			LocalDate endDate = today.plusDays(rollingWindowDays);
 			int regenerated = generateSlotsForDateRange(roomId, today, endDate);
-
+			
 			log.info("Regenerated {} slots for roomId={} (rollingWindowDays={})",
 					regenerated, roomId, rollingWindowDays);
-
+			
 			return regenerated;
-
+			
 		} catch (Exception e) {
 			log.error("Failed to regenerate future slots for roomId={}", roomId, e);
 			throw SlotGenerationFailedException.forRoom(roomId, e);
