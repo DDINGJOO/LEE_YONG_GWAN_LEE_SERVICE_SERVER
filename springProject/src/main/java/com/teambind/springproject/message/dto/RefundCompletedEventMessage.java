@@ -9,18 +9,23 @@ import lombok.NoArgsConstructor;
 /**
  * 환불 완료 이벤트 메시지 DTO.
  * <p>
- * Kafka 메시지로 수신되며, SlotRestoredEvent로 변환되어 슬롯 복구 처리된다.
+ * 결제 서버에서 발행하는 refund-completed 토픽 메시지를 수신한다.
+ * SlotRestoredEvent로 변환되어 슬롯 복구 처리된다.
  */
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class RefundCompletedEventMessage {
-	
-	private String topic;
+
 	private String eventType;
+	private String refundId;
+	private String paymentId;
 	private String reservationId;
-	private String occurredAt;
-	
+	private Long originalAmount;
+	private Long refundAmount;
+	private String reason;
+	private String completedAt;
+
 	/**
 	 * 메시지 DTO를 SlotRestoredEvent로 변환한다.
 	 * 환불 완료 시 해당 예약의 슬롯을 복구한다.
@@ -28,7 +33,7 @@ public class RefundCompletedEventMessage {
 	public SlotRestoredEvent toEvent() {
 		return SlotRestoredEvent.of(
 				reservationId,
-				"REFUND"
+				reason != null ? reason : "REFUND"
 		);
 	}
 }
