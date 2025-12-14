@@ -34,6 +34,11 @@ public class EventConsumer {
 		MESSAGE_TYPE_MAP.put("RefundCompleted", RefundCompletedEventMessage.class);
 		MESSAGE_TYPE_MAP.put("SlotGenerationRequested", SlotGenerationRequestedEventMessage.class);
 		MESSAGE_TYPE_MAP.put("ClosedDateUpdateRequested", ClosedDateUpdateRequestedEventMessage.class);
+
+		// 결제 서버 이벤트 타입 매핑 (대문자 스네이크 케이스)
+		MESSAGE_TYPE_MAP.put("PAYMENT_COMPLETED", PaymentCompletedEventMessage.class);
+		MESSAGE_TYPE_MAP.put("REFUND_COMPLETED", RefundCompletedEventMessage.class);
+		MESSAGE_TYPE_MAP.put("PAYMENT_CANCELLED", PaymentCancelledEventMessage.class);
 	}
 	
 	private final List<EventHandler<? extends Event>> eventHandlers;
@@ -45,7 +50,9 @@ public class EventConsumer {
 	 * @param message JSON 형식의 이벤트 메시지
 	 */
 	@KafkaListener(
-			topics = {"reservation-reserved", "reservation-cancelled", "reservation-restored", "payment-completed", "refund-completed", "slot-generation-requested", "closed-date-update-requested"},
+			topics = {"reservation-reserved", "reservation-cancelled", "reservation-restored",
+					"payment-completed", "refund-completed", "payment-cancelled",
+					"slot-generation-requested", "closed-date-update-requested"},
 			groupId = "room-operation-consumer-group"
 	)
 	public void consume(String message) {
@@ -102,12 +109,14 @@ public class EventConsumer {
 			return ((PaymentCompletedEventMessage) messageDto).toEvent();
 		} else if (messageDto instanceof RefundCompletedEventMessage) {
 			return ((RefundCompletedEventMessage) messageDto).toEvent();
+		} else if (messageDto instanceof PaymentCancelledEventMessage) {
+			return ((PaymentCancelledEventMessage) messageDto).toEvent();
 		} else if (messageDto instanceof SlotGenerationRequestedEventMessage) {
 			return ((SlotGenerationRequestedEventMessage) messageDto).toEvent();
 		} else if (messageDto instanceof ClosedDateUpdateRequestedEventMessage) {
 			return ((ClosedDateUpdateRequestedEventMessage) messageDto).toEvent();
 		}
-		
+
 		throw new IllegalArgumentException("Unknown message type: " + messageDto.getClass().getName());
 	}
 	
