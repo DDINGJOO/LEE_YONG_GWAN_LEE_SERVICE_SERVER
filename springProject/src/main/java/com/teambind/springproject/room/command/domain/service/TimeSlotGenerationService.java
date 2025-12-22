@@ -79,4 +79,15 @@ public interface TimeSlotGenerationService {
 	 * @return 재생성된 슬롯 개수
 	 */
 	int regenerateFutureSlots(Long roomId);
+	
+	/**
+	 * 특정 룸의 오늘부터 30일 이후까지 슬롯을 확인하고, 없는 날짜에만 생성한다.
+	 * <p>
+	 * 이미 슬롯이 존재하는 날짜는 건너뛰고, 슬롯이 없는 날짜에만 새로 생성한다.
+	 * Room이 새로 등록되거나 슬롯이 누락된 경우 보완하는 용도로 사용된다.
+	 *
+	 * @param roomId 룸 ID
+	 * @return 새로 생성된 슬롯 개수
+	 */
+	int ensureSlotsForNext30Days(Long roomId);
 }

@@ -136,7 +136,7 @@ public class TimeSlotGenerationServiceImpl implements TimeSlotGenerationService 
 		try {
 			// 1. 미래 슬롯 삭제 (Port 사용)
 			timeSlotPort.deleteByRoomId(roomId);
-			
+
 			log.info("Deleted future slots for roomId={}", roomId);
 			
 			// 2. N일치 슬롯 재생성 (설정값 사용)
@@ -153,5 +153,35 @@ public class TimeSlotGenerationServiceImpl implements TimeSlotGenerationService 
 			log.error("Failed to regenerate future slots for roomId={}", roomId, e);
 			throw SlotGenerationFailedException.forRoom(roomId, e);
 		}
+	}
+	
+	@Override
+	public int ensureSlotsForNext30Days(Long roomId) {
+		LocalDate today = LocalDate.now();
+		LocalDate endDate = today.plusDays(rollingWindowDays);
+		
+		// 1. 해당 기간의 기존 슬롯 조회
+		List<RoomTimeSlot> existingSlots = timeSlotPort.findByRoomIdAndSlotDateBetween(
+				roomId, today, endDate);
+		
+		// 2. 슬롯이 존재하는 날짜를 Set으로 수집
+		java.util.Set<LocalDate> datesWithSlots = existingSlots.stream()
+				.map(RoomTimeSlot::getSlotDate)
+				.collect(java.util.stream.Collectors.toSet());
+		
+		// 3. 슬롯이 없는 날짜에만 생성
+		int totalGenerated = 0;
+		LocalDate currentDate = today;
+		while (!currentDate.isAfter(endDate)) {
+			if (!datesWithSlots.contains(currentDate)) {
+				totalGenerated += generateSlotsForDate(roomId, currentDate);
+			}
+			currentDate = currentDate.plusDays(1);
+		}
+		
+		log.info("Ensured slots for roomId={}: {} new slots generated, {} dates already had slots",
+				roomId, totalGenerated, datesWithSlots.size());
+		
+		return totalGenerated;
 	}
 }

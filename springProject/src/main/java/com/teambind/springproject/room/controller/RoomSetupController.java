@@ -2,9 +2,11 @@ package com.teambind.springproject.room.controller;
 
 import com.teambind.springproject.room.command.application.ClosedDateSetupApplicationService;
 import com.teambind.springproject.room.command.application.RoomSetupApplicationService;
+import com.teambind.springproject.room.command.domain.service.TimeSlotGenerationService;
 import com.teambind.springproject.room.command.dto.ClosedDateSetupRequest;
 import com.teambind.springproject.room.command.dto.RoomOperatingPolicySetupRequest;
 import com.teambind.springproject.room.query.dto.ClosedDateSetupResponse;
+import com.teambind.springproject.room.query.dto.EnsureSlotsResponse;
 import com.teambind.springproject.room.query.dto.RoomSetupResponse;
 import com.teambind.springproject.room.query.dto.SlotGenerationStatusResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +25,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/rooms/setup")
 @RequiredArgsConstructor
 public class RoomSetupController {
-	
+
 	private final RoomSetupApplicationService setupService;
 	private final ClosedDateSetupApplicationService closedDateSetupService;
+	private final TimeSlotGenerationService timeSlotGenerationService;
 	
 	/**
 	 * 룸 운영 정책을 설정하고 슬롯 생성을 요청한다.
@@ -89,5 +92,27 @@ public class RoomSetupController {
 		return ResponseEntity
 				.status(HttpStatus.ACCEPTED)
 				.body(response);
+	}
+	
+	/**
+	 * 룸의 슬롯을 확인하고 없는 날짜에만 생성한다.
+	 * <p>
+	 * 오늘부터 30일 이후까지 슬롯을 조회하고, 슬롯이 없는 날짜에만 새로 생성한다.
+	 * Room이 새로 등록되거나 슬롯이 누락된 경우 보완하는 용도로 사용된다.
+	 *
+	 * @param roomId 룸 ID
+	 * @return 생성 결과 (새로 생성된 슬롯 개수)
+	 */
+	@PostMapping("/{roomId}/ensure-slots")
+	public ResponseEntity<EnsureSlotsResponse> ensureSlots(@PathVariable Long roomId) {
+		log.info("POST /api/rooms/setup/{}/ensure-slots", roomId);
+		
+		int generatedCount = timeSlotGenerationService.ensureSlotsForNext30Days(roomId);
+		
+		EnsureSlotsResponse response = new EnsureSlotsResponse(roomId, generatedCount);
+		
+		log.info("Ensured slots for roomId={}: {} slots generated", roomId, generatedCount);
+		
+		return ResponseEntity.ok(response);
 	}
 }
