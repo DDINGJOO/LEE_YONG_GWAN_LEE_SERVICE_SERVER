@@ -147,4 +147,21 @@ public interface RoomTimeSlotRepository extends JpaRepository<RoomTimeSlot, Long
 			@Param("roomId") Long roomId,
 			@Param("slotDate") LocalDate slotDate,
 			@Param("slotTimes") List<LocalTime> slotTimes);
+
+	/**
+	 * Room ID와 날짜 범위로 AVAILABLE 상태의 슬롯만 삭제한다.
+	 *
+	 * @param roomId    룸 ID
+	 * @param startDate 시작 날짜 (inclusive)
+	 * @param endDate   종료 날짜 (inclusive)
+	 * @return 삭제된 슬롯 개수
+	 */
+	@Modifying
+	@Query("DELETE FROM RoomTimeSlot r WHERE r.roomId = :roomId "
+			+ "AND r.slotDate BETWEEN :startDate AND :endDate "
+			+ "AND r.status = 'AVAILABLE'")
+	int deleteAvailableSlotsByRoomIdAndDateRange(
+			@Param("roomId") Long roomId,
+			@Param("startDate") LocalDate startDate,
+			@Param("endDate") LocalDate endDate);
 }

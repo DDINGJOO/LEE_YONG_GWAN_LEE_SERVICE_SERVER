@@ -93,6 +93,16 @@ public interface TimeSlotPort {
 	 * @param roomId 룸 ID
 	 */
 	void deleteByRoomId(Long roomId);
+
+	/**
+	 * Room ID와 날짜 범위로 AVAILABLE 상태의 슬롯만 삭제한다.
+	 *
+	 * @param roomId    룸 ID
+	 * @param startDate 시작 날짜 (inclusive)
+	 * @param endDate   종료 날짜 (inclusive)
+	 * @return 삭제된 슬롯 개수
+	 */
+	int deleteAvailableSlotsByRoomIdAndDateRange(Long roomId, LocalDate startDate, LocalDate endDate);
 	
 	/**
 	 * Room ID와 날짜 범위, 상태로 슬롯 개수를 조회한다.

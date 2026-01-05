@@ -103,4 +103,10 @@ public class TimeSlotJpaAdapter implements TimeSlotPort {
 			Long roomId, LocalDate slotDate, List<LocalTime> slotTimes) {
 		return repository.findByRoomIdAndSlotDateAndSlotTimeInWithLock(roomId, slotDate, slotTimes);
 	}
+
+	@Override
+	public int deleteAvailableSlotsByRoomIdAndDateRange(
+			Long roomId, LocalDate startDate, LocalDate endDate) {
+		return repository.deleteAvailableSlotsByRoomIdAndDateRange(roomId, startDate, endDate);
+	}
 }
