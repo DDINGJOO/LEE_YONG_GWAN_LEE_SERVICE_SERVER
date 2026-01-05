@@ -17,6 +17,8 @@ Room Time Slot Management Service는 음악 스튜디오, 공연장, 연습실 �
 | 비동기 대용량 처리    | Kafka 기반 이벤트 드리븐 아키텍처                         |
 | 분산 스케줄러       | ShedLock 기반 분산 환경 동시성 제어                      |
 | 다중 슬롯 예약      | Pessimistic Lock 기반 동시성 보장                    |
+| API 문서         | Swagger UI (SpringDoc OpenAPI)                  |
+| 권한 관리         | AOP 기반 PLACE_MANAGER 권한 검증                    |
 
 ### 1.3 기술 스택
 
@@ -29,6 +31,7 @@ Room Time Slot Management Service는 음악 스튜디오, 공연장, 연습실 �
 | Message Broker | Apache Kafka                        |
 | 분산 락           | ShedLock (Redis Provider)           |
 | Build Tool     | Gradle                              |
+| API Doc        | SpringDoc OpenAPI 2.3.0             |
 | Architecture   | DDD + Hexagonal + CQRS              |
 
 ---
@@ -320,6 +323,40 @@ erDiagram
 
 ## 4. API 명세
 
+### 4.0 API 문서 및 인증
+
+#### Swagger UI
+
+API 문서는 Swagger UI를 통해 확인할 수 있다.
+
+```
+GET /swagger-ui/index.html
+```
+
+#### 인증 헤더
+
+| 헤더         | 설명                         | 필수 |
+|------------|----------------------------|----|
+| X-App-Type | 앱 타입 (GENERAL, PLACE_MANAGER) | 조건부 |
+| X-User-Id  | 사용자 ID                     | N  |
+
+#### 권한 요구사항
+
+| 권한            | 설명                           | 대상 API                                     |
+|---------------|------------------------------|---------------------------------------------|
+| PLACE_MANAGER | 룸 관리자 전용 (등록/수정/삭제)           | POST /api/rooms/setup                       |
+|               |                              | POST /api/rooms/setup/closed-dates          |
+|               |                              | POST /api/rooms/setup/{roomId}/ensure-slots |
+|               |                              | PUT /api/rooms/setup/operating-hours        |
+| GENERAL       | 일반 사용자 (조회/예약)               | 그 외 모든 API                                  |
+
+**권한 검증 실패 시 응답:**
+
+| HTTP Status | 조건                     | 에러 코드        |
+|-------------|------------------------|--------------|
+| 400         | X-App-Type 헤더 누락        | VALIDATION_002 |
+| 403         | PLACE_MANAGER 권한 필요한 API에 GENERAL로 접근 | AUTH_003     |
+
 ### 4.1 룸 설정 API
 
 #### 운영 정책 설정 및 슬롯 생성
@@ -471,6 +508,53 @@ POST /api/rooms/setup/{roomId}/ensure-slots
 }
 ```
 
+#### 운영 시간 업데이트
+
+```
+PUT /api/rooms/setup/operating-hours
+```
+
+**Request**
+
+| 필드                          | 타입             | 필수 | 설명                             |
+|-----------------------------|----------------|----|---------------------------------|
+| roomId                      | Long           | Y  | 룸 ID                            |
+| slots                       | Array          | Y  | 요일별 슬롯 설정                       |
+| slots[].dayOfWeek           | String         | Y  | 요일 (MONDAY ~ SUNDAY)            |
+| slots[].startTimes          | Array<String>  | Y  | 시작 시각 목록 (HH:mm)                |
+| slots[].recurrencePattern   | String         | Y  | 반복 패턴                           |
+| slotUnit                    | String         | N  | 슬롯 단위 (HOUR, HALF_HOUR)         |
+
+**Request Example**
+
+```json
+{
+  "roomId": 101,
+  "slots": [
+    {
+      "dayOfWeek": "MONDAY",
+      "startTimes": ["10:00", "11:00", "14:00"],
+      "recurrencePattern": "EVERY_WEEK"
+    }
+  ],
+  "slotUnit": "HOUR"
+}
+```
+
+**Response (202 Accepted)**
+
+```json
+{
+  "requestId": "770e8400-e29b-41d4-a716-446655440002",
+  "roomId": 101
+}
+```
+
+**특징**
+- 기존 AVAILABLE 슬롯만 삭제 후 재생성
+- CLOSED, RESERVED, PENDING 슬롯은 유지
+- 비동기 처리 (Kafka 이벤트 발행)
+
 ### 4.2 예약 API
 
 #### 예약 가능 슬롯 조회
@@ -581,15 +665,16 @@ POST /api/v1/reservations/multi
 
 ### 4.3 API 엔드포인트 요약
 
-| 카테고리   | 메서드  | 엔드포인트                               | 설명         |
-|--------|------|-------------------------------------|------------|
-| 룸 설정   | POST | `/api/rooms/setup`                  | 운영 정책 설정   |
-|        | GET  | `/api/rooms/setup/{requestId}/status` | 생성 상태 조회   |
-|        | POST | `/api/rooms/setup/closed-dates`     | 휴무일 설정     |
-|        | POST | `/api/rooms/setup/{roomId}/ensure-slots` | 슬롯 보완 생성   |
-| 예약     | GET  | `/api/v1/reservations/available-slots` | 가용 슬롯 조회   |
-|        | POST | `/api/v1/reservations`              | 단일 슬롯 예약   |
-|        | POST | `/api/v1/reservations/multi`        | 다중 슬롯 예약   |
+| 카테고리   | 메서드  | 엔드포인트                               | 설명         | 권한           |
+|--------|------|-------------------------------------|------------|--------------|
+| 룸 설정   | POST | `/api/rooms/setup`                  | 운영 정책 설정   | PLACE_MANAGER |
+|        | GET  | `/api/rooms/setup/{requestId}/status` | 생성 상태 조회   | -            |
+|        | POST | `/api/rooms/setup/closed-dates`     | 휴무일 설정     | PLACE_MANAGER |
+|        | POST | `/api/rooms/setup/{roomId}/ensure-slots` | 슬롯 보완 생성   | PLACE_MANAGER |
+|        | PUT  | `/api/rooms/setup/operating-hours`  | 운영 시간 수정   | PLACE_MANAGER |
+| 예약     | GET  | `/api/v1/reservations/available-slots` | 가용 슬롯 조회   | -            |
+|        | POST | `/api/v1/reservations`              | 단일 슬롯 예약   | -            |
+|        | POST | `/api/v1/reservations/multi`        | 다중 슬롯 예약   | -            |
 
 ---
 
@@ -964,8 +1049,8 @@ src/main/java/com/teambind/springproject/
 
 ---
 
-**Version**: 1.1.0
+**Version**: 1.2.0
 **Team**: Teambind_dev_backend Team
 **Maintainer**: DDINGJOO
-**Last Updated**: 2025-01-20
+**Last Updated**: 2025-01-05
 **License**: Proprietary
