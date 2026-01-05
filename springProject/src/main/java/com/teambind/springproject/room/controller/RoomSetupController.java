@@ -7,6 +7,7 @@ import com.teambind.springproject.room.command.domain.service.TimeSlotGeneration
 import com.teambind.springproject.room.command.dto.ClosedDateSetupRequest;
 import com.teambind.springproject.room.command.dto.OperatingHoursUpdateRequest;
 import com.teambind.springproject.room.command.dto.RoomOperatingPolicySetupRequest;
+import com.teambind.springproject.room.controller.annotation.RequireRoomManager;
 import com.teambind.springproject.room.query.dto.ClosedDateSetupResponse;
 import com.teambind.springproject.room.query.dto.EnsureSlotsResponse;
 import com.teambind.springproject.room.query.dto.OperatingHoursUpdateResponse;
@@ -43,6 +44,7 @@ public class RoomSetupController {
 	 * @return 설정 응답 (요청 ID 포함)
 	 */
 	@PostMapping
+	@RequireRoomManager
 	public ResponseEntity<RoomSetupResponse> setupRoom(@RequestBody RoomOperatingPolicySetupRequest request) {
 		log.info("POST /api/rooms/setup - roomId: {}, slots: {}",
 				request.getRoomId(), request.getSlots().size());
@@ -84,6 +86,7 @@ public class RoomSetupController {
 	 * @return 설정 응답 (요청 ID 포함)
 	 */
 	@PostMapping("/closed-dates")
+	@RequireRoomManager
 	public ResponseEntity<ClosedDateSetupResponse> setupClosedDates(
 			@RequestBody ClosedDateSetupRequest request) {
 		log.info("POST /api/rooms/setup/closed-dates - roomId: {}, closedDateCount: {}",
@@ -108,6 +111,7 @@ public class RoomSetupController {
 	 * @return 생성 결과 (새로 생성된 슬롯 개수)
 	 */
 	@PostMapping("/{roomId}/ensure-slots")
+	@RequireRoomManager
 	public ResponseEntity<EnsureSlotsResponse> ensureSlots(@PathVariable Long roomId) {
 		log.info("POST /api/rooms/setup/{}/ensure-slots", roomId);
 
@@ -130,6 +134,7 @@ public class RoomSetupController {
 	 * @return 업데이트 응답 (요청 ID 포함)
 	 */
 	@PutMapping("/operating-hours")
+	@RequireRoomManager
 	public ResponseEntity<OperatingHoursUpdateResponse> updateOperatingHours(
 			@RequestBody OperatingHoursUpdateRequest request) {
 		log.info("PUT /api/rooms/setup/operating-hours - roomId: {}", request.getRoomId());
