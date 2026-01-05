@@ -31,7 +31,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @DisplayName("룸 초기 설정 통합 테스트")
 class RoomSetupIntegrationTest extends BaseIntegrationTest {
-	
+
+	private static final String APP_TYPE_HEADER = "X-App-Type";
+	private static final String PLACE_MANAGER = "PLACE_MANAGER";
+
 	@Autowired
 	private MockMvc mockMvc;
 	
@@ -83,6 +86,7 @@ class RoomSetupIntegrationTest extends BaseIntegrationTest {
 		
 		// When: POST /api/rooms/setup
 		String responseBody = mockMvc.perform(post("/api/rooms/setup")
+						.header(APP_TYPE_HEADER, PLACE_MANAGER)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(requestBody))
 				.andDo(print())
@@ -121,6 +125,7 @@ class RoomSetupIntegrationTest extends BaseIntegrationTest {
 				""";
 		
 		String setupResponse = mockMvc.perform(post("/api/rooms/setup")
+						.header(APP_TYPE_HEADER, PLACE_MANAGER)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(requestBody))
 				.andExpect(status().isAccepted())
@@ -160,6 +165,7 @@ class RoomSetupIntegrationTest extends BaseIntegrationTest {
 		
 		// When & Then
 		mockMvc.perform(post("/api/rooms/setup")
+						.header(APP_TYPE_HEADER, PLACE_MANAGER)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(requestBody))
 				.andExpect(status().isAccepted())
@@ -168,7 +174,7 @@ class RoomSetupIntegrationTest extends BaseIntegrationTest {
 				.andExpect(jsonPath("$.requestId").exists())
 				.andExpect(jsonPath("$.status").value("REQUESTED"));
 	}
-	
+
 	@Test
 	@DisplayName("여러 요일의 운영시간을 동시에 설정할 수 있다")
 	void setupRoom_MultipleWeekdays_Success() throws Exception {
@@ -209,10 +215,11 @@ class RoomSetupIntegrationTest extends BaseIntegrationTest {
 		
 		// When
 		mockMvc.perform(post("/api/rooms/setup")
+						.header(APP_TYPE_HEADER, PLACE_MANAGER)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(requestBody))
 				.andExpect(status().isAccepted());
-		
+
 		// Then: 총 10개의 슬롯 시간이 저장됨
 		RoomOperatingPolicy policy = policyRepository.findByRoomId(testRoomId)
 				.orElseThrow(() -> new AssertionError("Policy not found"));
