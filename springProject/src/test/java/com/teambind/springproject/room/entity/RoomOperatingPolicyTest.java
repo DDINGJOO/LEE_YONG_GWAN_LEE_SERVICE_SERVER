@@ -479,11 +479,79 @@ class RoomOperatingPolicyTest {
 		void cannotUpdateWithNullRecurrence() {
 			// Given
 			RoomOperatingPolicy policy = createBasicPolicy(RecurrencePattern.EVERY_WEEK);
-			
+
 			// When & Then
 			assertThatThrownBy(() -> policy.updateRecurrence(null))
 					.isInstanceOf(InvalidRequestException.class)
 					.hasMessageContaining("recurrence");
+		}
+
+		@Test
+		@DisplayName("[정상] 슬롯 단위를 업데이트한다")
+		void updateSlotUnit() {
+			// Given
+			RoomOperatingPolicy policy = createBasicPolicy(RecurrencePattern.EVERY_WEEK);
+			assertThat(policy.getSlotUnit()).isEqualTo(SlotUnit.HALF_HOUR);
+
+			// When
+			policy.updateSlotUnit(SlotUnit.HOUR);
+
+			// Then
+			assertThat(policy.getSlotUnit()).isEqualTo(SlotUnit.HOUR);
+			assertThat(policy.getUpdatedAt()).isNotNull();
+		}
+
+		@Test
+		@DisplayName("[오류] null 슬롯 단위로 업데이트할 수 없다")
+		void cannotUpdateWithNullSlotUnit() {
+			// Given
+			RoomOperatingPolicy policy = createBasicPolicy(RecurrencePattern.EVERY_WEEK);
+
+			// When & Then
+			assertThatThrownBy(() -> policy.updateSlotUnit(null))
+					.isInstanceOf(InvalidRequestException.class)
+					.hasMessageContaining("slotUnit");
+		}
+
+		@Test
+		@DisplayName("[정상] 운영 시간(스케줄+슬롯단위)을 한 번에 업데이트한다")
+		void updateOperatingHours() {
+			// Given
+			RoomOperatingPolicy policy = createBasicPolicy(RecurrencePattern.EVERY_WEEK);
+			WeeklySlotSchedule newSchedule = createWeekendSchedule();
+
+			// When
+			policy.updateOperatingHours(newSchedule, SlotUnit.HOUR);
+
+			// Then
+			assertThat(policy.getWeeklySchedule()).isEqualTo(newSchedule);
+			assertThat(policy.getSlotUnit()).isEqualTo(SlotUnit.HOUR);
+			assertThat(policy.getUpdatedAt()).isNotNull();
+		}
+
+		@Test
+		@DisplayName("[오류] null 스케줄로 운영 시간을 업데이트할 수 없다")
+		void cannotUpdateOperatingHoursWithNullSchedule() {
+			// Given
+			RoomOperatingPolicy policy = createBasicPolicy(RecurrencePattern.EVERY_WEEK);
+
+			// When & Then
+			assertThatThrownBy(() -> policy.updateOperatingHours(null, SlotUnit.HOUR))
+					.isInstanceOf(InvalidRequestException.class)
+					.hasMessageContaining("weeklySchedule");
+		}
+
+		@Test
+		@DisplayName("[오류] null 슬롯 단위로 운영 시간을 업데이트할 수 없다")
+		void cannotUpdateOperatingHoursWithNullSlotUnit() {
+			// Given
+			RoomOperatingPolicy policy = createBasicPolicy(RecurrencePattern.EVERY_WEEK);
+			WeeklySlotSchedule newSchedule = createWeekendSchedule();
+
+			// When & Then
+			assertThatThrownBy(() -> policy.updateOperatingHours(newSchedule, null))
+					.isInstanceOf(InvalidRequestException.class)
+					.hasMessageContaining("slotUnit");
 		}
 	}
 }
